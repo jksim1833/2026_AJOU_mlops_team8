@@ -1,0 +1,89 @@
+{
+  "project": "diecasting_binary_defect_classification",
+  "model_version": "rf_binary_v1",
+  "data_version": "binary_product1_v1",
+  "target": {
+    "0": "normal",
+    "1": "defect"
+  },
+  "features": [
+    "Velocity_1",
+    "Velocity_2",
+    "Velocity_3",
+    "High_Velocity",
+    "Cylinder_Pressure",
+    "Rapid_Rise_Time",
+    "Biscuit_Thickness",
+    "Clamping_Force",
+    "Cycle_Time",
+    "Pressure_Rise_Time",
+    "Casting_Pressure",
+    "Spray_Time",
+    "Spray_1_Time",
+    "Spray_2_Time",
+    "Melting_Furnace_Temp",
+    "Air_Pressure",
+    "Air_Pressure_Min",
+    "Air_Pressure_Max",
+    "Coolant_Temp",
+    "Coolant_Temp_Min",
+    "Coolant_Temp_Max",
+    "Coolant_Pressure",
+    "Factory_Temp",
+    "Factory_Temp_Min",
+    "Factory_Temp_Max",
+    "Factory_Humidity",
+    "Factory_Humidity_Min",
+    "Factory_Humidity_Max"
+  ],
+  "run_id": "e2de176a8e954287b62e461dff00ea73",
+  "primary_metric": "validation_f1",
+  "validation_metrics": {
+    "accuracy": 0.7812995245641838,
+    "precision": 0.42702702702702705,
+    "recall": 0.7117117117117117,
+    "f1": 0.5337837837837838,
+    "roc_auc": 0.8282311157311156
+  },
+  "test_metrics": {
+    "accuracy": 0.7958860759493671,
+    "precision": 0.4444444444444444,
+    "recall": 0.6486486486486487,
+    "f1": 0.5274725274725275,
+    "roc_auc": 0.8393335754180284
+  },
+  "top_features": [
+    {
+      "feature": "Factory_Humidity",
+      "importance": 0.13573538630431628
+    },
+    {
+      "feature": "Factory_Temp",
+      "importance": 0.07896514051356662
+    },
+    {
+      "feature": "Cycle_Time",
+      "importance": 0.07680999120861873
+    },
+    {
+      "feature": "Spray_Time",
+      "importance": 0.07575366232006334
+    },
+    {
+      "feature": "Coolant_Pressure",
+      "importance": 0.06939644777628783
+    },
+    {
+      "feature": "High_Velocity",
+      "importance": 0.0651621109944285
+    },
+    {
+      "feature": "Air_Pressure",
+      "importance": 0.05974292219867901
+    },
+    {
+      "feature": "Melting_Furnace_Temp",
+      "importance": 0.05927745564701155
+    }
+  ]
+}

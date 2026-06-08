@@ -1,0 +1,114 @@
+[
+  {
+    "feature": "Factory_Humidity",
+    "importance": 0.13573538630431628
+  },
+  {
+    "feature": "Factory_Temp",
+    "importance": 0.07896514051356662
+  },
+  {
+    "feature": "Cycle_Time",
+    "importance": 0.07680999120861873
+  },
+  {
+    "feature": "Spray_Time",
+    "importance": 0.07575366232006334
+  },
+  {
+    "feature": "Coolant_Pressure",
+    "importance": 0.06939644777628783
+  },
+  {
+    "feature": "High_Velocity",
+    "importance": 0.0651621109944285
+  },
+  {
+    "feature": "Air_Pressure",
+    "importance": 0.05974292219867901
+  },
+  {
+    "feature": "Melting_Furnace_Temp",
+    "importance": 0.05927745564701155
+  },
+  {
+    "feature": "Casting_Pressure",
+    "importance": 0.05349939887069871
+  },
+  {
+    "feature": "Velocity_3",
+    "importance": 0.04201852953785191
+  },
+  {
+    "feature": "Coolant_Temp",
+    "importance": 0.03806507246600147
+  },
+  {
+    "feature": "Clamping_Force",
+    "importance": 0.037052784983825894
+  },
+  {
+    "feature": "Spray_1_Time",
+    "importance": 0.031931295040841426
+  },
+  {
+    "feature": "Biscuit_Thickness",
+    "importance": 0.029939547005650935
+  },
+  {
+    "feature": "Velocity_1",
+    "importance": 0.02829085969778067
+  },
+  {
+    "feature": "Cylinder_Pressure",
+    "importance": 0.027300476920064418
+  },
+  {
+    "feature": "Pressure_Rise_Time",
+    "importance": 0.02626002070621749
+  },
+  {
+    "feature": "Spray_2_Time",
+    "importance": 0.022563628286264924
+  },
+  {
+    "feature": "Velocity_2",
+    "importance": 0.021927299756707947
+  },
+  {
+    "feature": "Rapid_Rise_Time",
+    "importance": 0.020307969765122454
+  },
+  {
+    "feature": "Air_Pressure_Min",
+    "importance": 0.0
+  },
+  {
+    "feature": "Air_Pressure_Max",
+    "importance": 0.0
+  },
+  {
+    "feature": "Coolant_Temp_Min",
+    "importance": 0.0
+  },
+  {
+    "feature": "Coolant_Temp_Max",
+    "importance": 0.0
+  },
+  {
+    "feature": "Factory_Temp_Min",
+    "importance": 0.0
+  },
+  {
+    "feature": "Factory_Temp_Max",
+    "importance": 0.0
+  },
+  {
+    "feature": "Factory_Humidity_Min",
+    "importance": 0.0
+  },
+  {
+    "feature": "Factory_Humidity_Max",
+    "importance": 0.0
+  }
+]

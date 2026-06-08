@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+mlruns/
+data/raw/*.csv
+data/processed/*.csv
+*.log

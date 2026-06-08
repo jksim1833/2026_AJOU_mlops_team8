@@ -1,0 +1,33 @@
+stages:
+  prepare_data:
+    cmd: python -m src.data.prepare_data
+    deps:
+      - data/raw/DieCasting_Quality_Raw_Data_product1.csv
+      - src/data/prepare_data.py
+      - configs/params.yaml
+    outs:
+      - data/processed/diecasting_product1_binary.csv
+      - data/processed/train.csv
+      - data/processed/valid.csv
+      - data/processed/test.csv
+      - artifacts/reports/data_profile.json
+
+  train_binary:
+    cmd: python -m src.models.train_binary
+    deps:
+      - data/processed/train.csv
+      - data/processed/valid.csv
+      - data/processed/test.csv
+      - src/models/train_binary.py
+      - configs/params.yaml
+    outs:
+      - artifacts/models/model.joblib
+      - artifacts/models/metadata.json
+      - artifacts/reports/metrics.json
+      - artifacts/reports/feature_importance.json
+      - artifacts/reports/sample_inputs.json
+      - artifacts/reports/normal_request.json
+      - artifacts/reports/defect_request.json
+      - artifacts/plots/confusion_matrix.png
+      - artifacts/plots/roc_curve.png
+      - artifacts/plots/feature_importance.png

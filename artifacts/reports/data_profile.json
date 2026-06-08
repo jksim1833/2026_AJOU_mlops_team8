@@ -1,0 +1,53 @@
+{
+  "source": "data\\raw\\DieCasting_Quality_Raw_Data_product1.csv",
+  "processed": "data\\processed\\diecasting_product1_binary.csv",
+  "rows": 4207,
+  "columns": 29,
+  "target_column": "defect_label",
+  "class_counts": {
+    "0": 3468,
+    "1": 739
+  },
+  "defect_columns_removed": [
+    "Short_Shot_1",
+    "Bubble_1",
+    "Exfoliation_1",
+    "Blow_Hole_1",
+    "Stain_1",
+    "Dent_1",
+    "Deformation_1",
+    "Contamination_1",
+    "Impurity_1",
+    "Crack_1",
+    "Scratch_1",
+    "Buring_Mark_1",
+    "Inclusions_1",
+    "Short_Shot_2",
+    "Bubble_2",
+    "Exfoliation_2",
+    "Blow_Hole_2",
+    "Stain_2",
+    "Dent_2",
+    "Deformation_2",
+    "Contamination_2",
+    "Impurity_2",
+    "Crack_2",
+    "Scratch_2",
+    "Buring_Mark_2",
+    "Inclusions_2"
+  ],
+  "split_counts": {
+    "train": {
+      "0": 2427,
+      "1": 517
+    },
+    "valid": {
+      "0": 520,
+      "1": 111
+    },
+    "test": {
+      "0": 521,
+      "1": 111
+    }
+  }
+}

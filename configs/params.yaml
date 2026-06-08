@@ -1,0 +1,38 @@
+project:
+  name: diecasting_binary_defect_classification
+  data_version: binary_product1_v1
+  model_version: rf_binary_v1
+
+data:
+  raw_path: data/raw/DieCasting_Quality_Raw_Data_product1.csv
+  processed_path: data/processed/diecasting_product1_binary.csv
+  target_column: defect_label
+  normal_label: 0
+  defect_label: 1
+  test_size: 0.15
+  validation_size: 0.15
+  random_state: 42
+
+model:
+  baseline_name: RandomForestClassifier
+  n_estimators: 200
+  max_depth: 10
+  min_samples_leaf: 2
+  class_weight: balanced
+  random_state: 42
+
+tracking:
+  experiment_name: diecasting_binary_defect_classification
+  tracking_uri: sqlite:///mlflow.db
+
+artifacts:
+  model_path: artifacts/models/model.joblib
+  metadata_path: artifacts/models/metadata.json
+  metrics_path: artifacts/reports/metrics.json
+  sample_inputs_path: artifacts/reports/sample_inputs.json
+  normal_request_path: artifacts/reports/normal_request.json
+  defect_request_path: artifacts/reports/defect_request.json
+  feature_importance_path: artifacts/reports/feature_importance.json
+  confusion_matrix_path: artifacts/plots/confusion_matrix.png
+  roc_curve_path: artifacts/plots/roc_curve.png
+  feature_importance_plot_path: artifacts/plots/feature_importance.png
