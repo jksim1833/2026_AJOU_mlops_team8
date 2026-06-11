@@ -655,33 +655,53 @@ def write_reports(
     doc = [
         "# Baseline and SHAP XAI Report",
         "",
-        "Scope: baseline model comparison and SHAP-based XAI draft for the diecasting "
-        "normal/defect binary classification task.",
+        "## 1. 목적",
         "",
-        "## Baseline Comparison",
+        "본 보고서는 다이캐스팅 정상/불량 이진 분류 프로젝트에서 baseline 모델 "
+        "비교와 SHAP 기반 XAI 산출 방식을 정리한다. 목표는 같은 평가 기준에서 "
+        "tuning 후보 모델을 선정하고, 선택된 모델의 예측 근거를 설명하는 것이다.",
+        "",
+        "## 2. Baseline comparison 결과",
+        "",
+        "모든 baseline 후보 모델은 동일한 train/validation/test split에서 학습 및 "
+        "평가한다. 모델 순위는 validation F1을 우선 기준으로 정하고, validation "
+        "ROC-AUC를 tie-breaker로 사용한다.",
         "",
         markdown_table(table_rows, metric_columns),
         "",
-        "## Candidate Recommendation",
+        "## 3. Candidate 추천",
         "",
-        f"`{best_row['model']}` is recommended as the first tuning candidate. "
-        "The selection rule is validation F1 first, then validation ROC-AUC.",
+        f"`{best_row['model']}` 모델은 shared split에서 가장 높은 validation F1 "
+        f"({best_row['validation_f1']:.3f})을 기록했기 때문에 첫 번째 tuning "
+        "후보로 추천한다. 선택된 후보 모델은 "
+        "`artifacts/models/baseline_candidate.joblib`에 저장된다.",
         "",
-        "## SHAP/XAI Outputs",
+        "## 4. SHAP/XAI 적용 방식",
         "",
-        f"- SHAP status: {shap_status.get('status')}",
+        "SHAP 분석은 모든 후보 모델에 각각 수행하는 방식이 아니다. 먼저 모든 "
+        "baseline 후보를 비교하고, best candidate model 1개를 선택한 뒤 해당 "
+        "모델에 대해서만 SHAP 설명을 자동 생성한다.",
+        "",
+        "- positive SHAP value: 예측을 defect 방향으로 밀어준다.",
+        "- negative SHAP value: 예측을 normal 방향으로 밀어준다.",
+        "- SHAP 절댓값이 클수록 해당 feature의 영향이 크다.",
+        "",
+        "## 5. SHAP/XAI 산출물",
+        "",
+        f"- SHAP status: `{shap_status.get('status')}`",
         "- `artifacts/plots/shap_summary_bar.png`",
         "- `artifacts/plots/shap_beeswarm.png`",
         "- `artifacts/plots/shap_waterfall_defect_sample.png`",
         "- `artifacts/reports/xai_feature_interpretation.md`",
         "- `artifacts/reports/shap_local_explanation.md`",
         "",
-        "## Presentation Talking Points",
+        "## 6. 발표 시 핵심 설명",
         "",
-        "- Accuracy is not enough because normal samples are the majority class.",
-        "- F1, recall, precision, and ROC-AUC are reported together to show defect detection quality.",
-        "- SHAP positive values push a prediction toward defect; negative values push toward normal.",
-        "- The selected candidate should be handed off for threshold/hyperparameter tuning before serving.",
+        "- 본 프로젝트는 normal = 0, defect = 1인 binary classification 문제이다.",
+        "- 결함 컬럼은 label 생성에만 사용하고 feature에서는 제거하여 label leakage를 방지했다.",
+        "- 데이터가 class-imbalanced이므로 F1을 primary metric으로 사용한다.",
+        "- SHAP은 baseline comparison 이후 선택된 best candidate model에 자동 적용된다.",
+        "- 최종 serving 전에는 선택된 candidate에 대해 threshold 또는 hyperparameter tuning을 수행하는 것이 적절하다.",
         "",
     ]
     if skipped:
