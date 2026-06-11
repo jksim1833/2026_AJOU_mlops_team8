@@ -7,3 +7,4 @@ mlruns/
 data/raw/*.csv
 data/processed/*.csv
 *.log
+.local_run/
