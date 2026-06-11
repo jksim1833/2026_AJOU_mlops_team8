@@ -655,57 +655,76 @@ def write_reports(
     doc = [
         "# Baseline and SHAP XAI Report",
         "",
-        "## 1. 목적",
+        "## 1. 보고서 목적",
         "",
-        "본 보고서는 다이캐스팅 정상/불량 이진 분류 프로젝트에서 baseline 모델 "
-        "비교와 SHAP 기반 XAI 산출 방식을 정리한다. 목표는 같은 평가 기준에서 "
-        "tuning 후보 모델을 선정하고, 선택된 모델의 예측 근거를 설명하는 것이다.",
+        "본 문서는 다이캐스팅 정상/불량 이진 분류 프로젝트에서 baseline 모델링과 "
+        "SHAP 기반 XAI 구현 내용을 정리한다.",
         "",
-        "## 2. Baseline comparison 결과",
+        "Baseline은 여러 후보 모델을 같은 train/validation/test split과 같은 "
+        "metric으로 비교하여 후속 tuning 후보를 선정하는 단계이다. XAI는 "
+        "선정된 모델이 normal/defect를 판단할 때 어떤 feature를 근거로 삼았는지 "
+        "설명하는 단계이다.",
         "",
-        "모든 baseline 후보 모델은 동일한 train/validation/test split에서 학습 및 "
-        "평가한다. 모델 순위는 validation F1을 우선 기준으로 정하고, validation "
-        "ROC-AUC를 tie-breaker로 사용한다.",
+        "## 2. Baseline 구현 내용",
+        "",
+        "비교 후보 모델:",
+        "",
+        "- Logistic Regression",
+        "- Decision Tree",
+        "- RandomForest",
+        "- XGBoost",
+        "- LightGBM",
+        "",
+        "평가 metric은 accuracy, precision, recall, F1, ROC-AUC를 함께 사용한다. "
+        "정상 class가 더 많은 class imbalance 문제이므로 validation F1을 우선 "
+        "기준으로 하고 validation ROC-AUC를 tie-breaker로 사용한다.",
+        "",
+        "## 3. Baseline 비교 결과",
         "",
         markdown_table(table_rows, metric_columns),
         "",
-        "## 3. Candidate 추천",
+        "## 4. 선택된 후보 모델",
         "",
-        f"`{best_row['model']}` 모델은 shared split에서 가장 높은 validation F1 "
-        f"({best_row['validation_f1']:.3f})을 기록했기 때문에 첫 번째 tuning "
-        "후보로 추천한다. 선택된 후보 모델은 "
-        "`artifacts/models/baseline_candidate.joblib`에 저장된다.",
+        f"`{best_row['model']}` 모델은 shared split에서 validation F1 "
+        f"({best_row['validation_f1']:.3f}) 기준 가장 높은 성능을 보여 첫 번째 "
+        "tuning 후보로 선택되었다. 선택된 모델은 "
+        "`artifacts/models/baseline_candidate.joblib`로 저장된다.",
         "",
-        "## 4. SHAP/XAI 적용 방식",
+        "## 5. SHAP/XAI 구현 내용",
         "",
-        "SHAP 분석은 모든 후보 모델에 각각 수행하는 방식이 아니다. 먼저 모든 "
-        "baseline 후보를 비교하고, best candidate model 1개를 선택한 뒤 해당 "
-        "모델에 대해서만 SHAP 설명을 자동 생성한다.",
+        "SHAP은 모든 후보 모델마다 실행하지 않는다. 먼저 baseline 후보 모델들을 "
+        "비교한 뒤, 선택된 best candidate model 1개에 대해서만 자동으로 SHAP "
+        "분석을 수행한다.",
         "",
-        "- positive SHAP value: 예측을 defect 방향으로 밀어준다.",
-        "- negative SHAP value: 예측을 normal 방향으로 밀어준다.",
-        "- SHAP 절댓값이 클수록 해당 feature의 영향이 크다.",
+        "생성되는 설명:",
         "",
-        "## 5. SHAP/XAI 산출물",
+        "- Global explanation: 전체 test sample 기준으로 중요한 feature를 보여준다.",
+        "- Local explanation: 특정 sample의 예측에 대한 feature별 기여도를 보여준다.",
+        "- Positive SHAP value는 예측을 defect 방향으로 이동시킨다.",
+        "- Negative SHAP value는 예측을 normal 방향으로 이동시킨다.",
+        "",
+        "## 6. 주요 산출물",
+        "",
+        "Baseline 산출물:",
+        "",
+        "- `artifacts/reports/baseline_metric_table.md`",
+        "- `artifacts/reports/baseline_comparison.csv`",
+        "- `artifacts/reports/candidate_handoff_note.md`",
+        "- `artifacts/models/baseline_candidate.joblib`",
+        "- `artifacts/models/baseline_candidate_metadata.json`",
+        "",
+        "SHAP/XAI 산출물:",
         "",
         f"- SHAP status: `{shap_status.get('status')}`",
+        "- `artifacts/reports/xai_feature_interpretation.md`",
+        "- `artifacts/reports/shap_local_explanation.md`",
         "- `artifacts/plots/shap_summary_bar.png`",
         "- `artifacts/plots/shap_beeswarm.png`",
         "- `artifacts/plots/shap_waterfall_defect_sample.png`",
-        "- `artifacts/reports/xai_feature_interpretation.md`",
-        "- `artifacts/reports/shap_local_explanation.md`",
-        "",
-        "## 6. 발표 시 핵심 설명",
-        "",
-        "- 본 프로젝트는 normal = 0, defect = 1인 binary classification 문제이다.",
-        "- 결함 컬럼은 label 생성에만 사용하고 feature에서는 제거하여 label leakage를 방지했다.",
-        "- 데이터가 class-imbalanced이므로 F1을 primary metric으로 사용한다.",
-        "- SHAP은 baseline comparison 이후 선택된 best candidate model에 자동 적용된다.",
-        "- 최종 serving 전에는 선택된 candidate에 대해 threshold 또는 hyperparameter tuning을 수행하는 것이 적절하다.",
         "",
     ]
     if skipped:
-        doc.extend(["## Notes", "", *[f"- {item}" for item in skipped], ""])
+        doc.extend(["## Notes", "", "설치되지 않은 optional baseline:", "", *[f"- {item}" for item in skipped], ""])
     DOC_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     DOC_REPORT_PATH.write_text("\n".join(doc), encoding="utf-8")
 
