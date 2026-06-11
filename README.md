@@ -11,7 +11,7 @@
 | 역할 | 담당자 | 주요 책임 |
 | :--- | :--- | :--- |
 | Data | 김병근 | 데이터 출처, EDA, binary label, split, DVC 전략 |
-| Modeling | Zhang Xin | RF baseline, 후보 모델 비교, champion 선정 |
+| Modeling | Team 8 Modeling | RF baseline, 후보 모델 비교, champion 선정 |
 | MLOps/Serving | 심재광 | GitHub 구조, MLflow, FastAPI, Docker |
 | 발표/문서화 | 심재광 | 보고서, 발표자료, demo script |
 
@@ -64,7 +64,7 @@ PyCharm shared run configurations are included under `.run/`:
 - `FastAPI`
 - `MLflow UI`
 - `Streamlit Dashboard`
-- `Zhang Baseline XAI`
+- `Baseline XAI`
 
 This starts the local demo services:
 
@@ -110,9 +110,9 @@ python -m src.data.prepare_data
 python -m src.models.train_binary
 ```
 
-## 2-1. Zhang Xin Baseline Comparison and SHAP XAI
+## 2-1. Baseline Comparison and SHAP XAI
 
-Zhang Xin's modeling task compares multiple baseline candidates on the same
+The modeling task compares multiple baseline candidates on the same
 train/validation/test split, selects a tuning candidate by validation F1, and
 generates SHAP-based global/local explanations.
 
@@ -125,7 +125,7 @@ Main outputs:
 - `artifacts/reports/baseline_metric_table.md`
 - `artifacts/reports/baseline_comparison.csv`
 - `artifacts/reports/candidate_handoff_note.md`
-- `docs/zhang_baseline_xai_report.md`
+- `docs/baseline_xai_report.md`
 - `artifacts/reports/xai_feature_interpretation.md`
 - `artifacts/reports/shap_local_explanation.md`
 - `artifacts/plots/baseline_validation_metrics.png`

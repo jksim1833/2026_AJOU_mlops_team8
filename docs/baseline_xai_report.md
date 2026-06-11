@@ -1,4 +1,4 @@
-# Zhang Xin Baseline and SHAP XAI Report
+# Baseline and SHAP XAI Report
 
 
 This document is the report target for the modeling task: baseline comparison
@@ -17,7 +17,7 @@ Accuracy is not the primary metric because normal samples are the majority
 class. F1, recall, precision, and ROC-AUC are reported together to evaluate
 defect detection quality.
 
-## Reproducible Zhang Task Command
+## Reproducible Baseline/XAI Task Command
 
 After the raw CSV is available at
 `data/raw/DieCasting_Quality_Raw_Data_product1.csv`, run:

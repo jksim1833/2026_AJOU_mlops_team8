@@ -57,4 +57,4 @@ stages:
       - artifacts/plots/shap_summary_bar.png
       - artifacts/plots/shap_beeswarm.png
       - artifacts/plots/shap_waterfall_defect_sample.png
-      - docs/zhang_baseline_xai_report.md
+      - docs/baseline_xai_report.md

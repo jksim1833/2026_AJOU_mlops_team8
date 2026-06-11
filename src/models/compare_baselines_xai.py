@@ -35,7 +35,7 @@ CONFIG_PATH = ROOT / "configs" / "params.yaml"
 REPORT_DIR = ROOT / "artifacts" / "reports"
 PLOT_DIR = ROOT / "artifacts" / "plots"
 MODEL_DIR = ROOT / "artifacts" / "models"
-DOC_REPORT_PATH = ROOT / "docs" / "zhang_baseline_xai_report.md"
+DOC_REPORT_PATH = ROOT / "docs" / "baseline_xai_report.md"
 
 
 @dataclass
@@ -321,7 +321,7 @@ def save_candidate_artifact(
 
     metadata = {
         "project": cfg["project"]["name"],
-        "owner": "Zhang Xin",
+        "owner": "team8_modeling",
         "artifact_role": "baseline_candidate_for_tuning",
         "selection_rule": "highest validation F1, validation ROC-AUC as tie-breaker",
         "selected_model": record["model"],
@@ -629,7 +629,7 @@ def write_reports(
     handoff = [
         "# Candidate Handoff Note",
         "",
-        "Owner: Zhang Xin",
+        "Owner: Team 8 modeling task",
         "",
         f"Primary recommendation: `{best_row['model']}` because it has the best validation F1 "
         f"({best_row['validation_f1']:.3f}) under the shared split.",
@@ -653,7 +653,7 @@ def write_reports(
     (REPORT_DIR / "candidate_handoff_note.md").write_text("\n".join(handoff), encoding="utf-8")
 
     doc = [
-        "# Zhang Xin Baseline and SHAP XAI Report",
+        "# Baseline and SHAP XAI Report",
         "",
         "Scope: baseline model comparison and SHAP-based XAI draft for the diecasting "
         "normal/defect binary classification task.",
@@ -732,7 +732,7 @@ def train_and_compare(args: argparse.Namespace) -> dict[str, Any]:
         if not args.skip_mlflow:
             with mlflow.start_run(run_name=f"{spec.name}_baseline"):
                 mlflow.log_params(spec.params)
-                mlflow.log_param("owner", "Zhang Xin")
+                mlflow.log_param("owner", "team8_modeling")
                 mlflow.log_param("target_column", target_column)
                 mlflow.log_param("data_version", cfg["project"]["data_version"])
                 for key, value in valid_metrics.items():
@@ -741,7 +741,7 @@ def train_and_compare(args: argparse.Namespace) -> dict[str, Any]:
                 for key, value in test_metrics.items():
                     if isinstance(value, (int, float)):
                         mlflow.log_metric(f"test_{key}", value)
-                mlflow.set_tag("stage", "zhang_baseline_comparison")
+                mlflow.set_tag("stage", "baseline_comparison")
 
     records.sort(
         key=lambda item: (item["validation"]["f1"], item["validation"]["roc_auc"]),
@@ -765,12 +765,12 @@ def train_and_compare(args: argparse.Namespace) -> dict[str, Any]:
     write_reports(records, skipped, best_record, shap_status)
 
     if not args.skip_mlflow:
-        with mlflow.start_run(run_name="zhang_baseline_xai_summary"):
-            mlflow.log_param("owner", "Zhang Xin")
+        with mlflow.start_run(run_name="baseline_xai_summary"):
+            mlflow.log_param("owner", "team8_modeling")
             mlflow.log_param("selection_rule", "validation_f1_then_validation_roc_auc")
             mlflow.log_metric("best_validation_f1", best_record["validation"]["f1"])
             mlflow.log_metric("best_validation_roc_auc", best_record["validation"]["roc_auc"])
-            mlflow.set_tag("stage", "zhang_xai_summary")
+            mlflow.set_tag("stage", "baseline_xai_summary")
             for path in [
                 REPORT_DIR / "baseline_comparison.csv",
                 REPORT_DIR / "baseline_metric_table.md",
@@ -798,7 +798,7 @@ def train_and_compare(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Compare Zhang Xin baseline candidates and generate SHAP/XAI outputs."
+        description="Compare baseline candidates and generate SHAP/XAI outputs."
     )
     parser.add_argument("--skip-mlflow", action="store_true", help="Do not log comparison runs to MLflow.")
     parser.add_argument("--no-shap", action="store_true", help="Skip SHAP artifact generation.")

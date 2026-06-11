@@ -138,12 +138,12 @@ label 생성에 사용한 결함 컬럼은 feature에서 반드시 제거한다.
 
 | 단계 | 담당 | 목적 | 범위 |
 | :--- | :--- | :--- | :--- |
-| Baseline 후보 비교 | Zhang Xin | 어떤 모델군이 이 데이터에 적합한지 확인 | Logistic Regression, Decision Tree, RandomForest, XGBoost/LightGBM 등 기본 설정 비교 |
+| Baseline 후보 비교 | Modeling | 어떤 모델군이 이 데이터에 적합한지 확인 | Logistic Regression, Decision Tree, RandomForest, XGBoost/LightGBM 등 기본 설정 비교 |
 | 학습 이후 tuning/실험관리 | 심재광 | 선택된 후보를 MLOps 관점에서 추적·최적화 | threshold 조정, hyperparameter tuning, MLflow run 관리, champion tag |
 
-따라서 Zhang Xin은 “최종 튜닝 완료 모델”을 책임지는 것이 아니라, **최적화 전 baseline 모델 후보들의 성능 비교와 XAI 초안을 만드는 역할**에 집중한다. 이후 심재광이 tuning, MLflow tracking, serving candidate 선정으로 이어받는다.
+따라서 Modeling은 “최종 튜닝 완료 모델”을 책임지는 것이 아니라, **최적화 전 baseline 모델 후보들의 성능 비교와 XAI 초안을 만드는 역할**에 집중한다. 이후 심재광이 tuning, MLflow tracking, serving candidate 선정으로 이어받는다.
 
-### Zhang Xin이 이어서 구체화할 일
+### Modeling이 이어서 구체화할 일
 
 | 우선순위 | 작업 | 산출물 |
 | :--- | :--- | :--- |
@@ -157,7 +157,7 @@ label 생성에 사용한 결함 컬럼은 feature에서 반드시 제거한다.
 
 | 우선순위 | 작업 | 산출물 |
 | :--- | :--- | :--- |
-| 1 | Zhang이 넘긴 후보 모델의 threshold 또는 hyperparameter tuning | tuning result table |
+| 1 | baseline comparison에서 넘긴 후보 모델의 threshold 또는 hyperparameter tuning | tuning result table |
 | 2 | tuning 전/후 결과를 MLflow run으로 기록 | MLflow comparison evidence |
 | 3 | champion 또는 candidate_for_serving tag 설정 | MLflow tag screenshot |
 | 4 | 최종 model artifact를 FastAPI serving과 연결 | updated model metadata |
@@ -196,11 +196,11 @@ Raw CSV
 | :--- | :--- | :--- |
 | 김병근 | `Week-2-Data-Ops-EDA-and-Preprocessing.ipynb` | 데이터 로드, 결측치/이상치 확인, target 분포, feature 분포, EDA 리포트 작성 방식 |
 | 김병근 | `week03 - mlops infra with code and data versioning.ipynb` | Git/DVC 구조, 데이터 파일을 Git에 직접 넣지 않는 이유, DVC stage/metadata 설명 |
-| Zhang Xin | `week05 - classic ml tree ensemble and random forest.ipynb` | Decision Tree, RandomForest, feature importance, confusion matrix, classification report |
-| Zhang Xin | `week06 - boosting evolution xgboost and lightgbm.ipynb` | XGBoost/LightGBM baseline, early stopping 개념, boosting 계열 비교 |
-| Zhang Xin | `week07 - advanced ML II - SOTA boosting.pdf` | SOTA boosting 계열 모델을 후보군으로 고려하는 이유와 tuning 전 비교 관점 |
-| Zhang Xin | `week10 - deep learning II NLP and transformer.pdf` | 복잡한 딥러닝/Transformer 계열은 본 tabular 문제의 MVP 범위 밖이라는 판단 근거 정리 |
-| Zhang Xin | `week12 - xai feature importance and shap.ipynb` | Feature importance, SHAP bar/summary/waterfall, local explanation 문장 작성 |
+| Modeling | `week05 - classic ml tree ensemble and random forest.ipynb` | Decision Tree, RandomForest, feature importance, confusion matrix, classification report |
+| Modeling | `week06 - boosting evolution xgboost and lightgbm.ipynb` | XGBoost/LightGBM baseline, early stopping 개념, boosting 계열 비교 |
+| Modeling | `week07 - advanced ML II - SOTA boosting.pdf` | SOTA boosting 계열 모델을 후보군으로 고려하는 이유와 tuning 전 비교 관점 |
+| Modeling | `week10 - deep learning II NLP and transformer.pdf` | 복잡한 딥러닝/Transformer 계열은 본 tabular 문제의 MVP 범위 밖이라는 판단 근거 정리 |
+| Modeling | `week12 - xai feature importance and shap.ipynb` | Feature importance, SHAP bar/summary/waterfall, local explanation 문장 작성 |
 | 심재광 | `week13 - mlops core experiment tracking.ipynb` | MLflow experiment/run, params/metrics/artifacts, candidate/champion tag |
 | 심재광 | `week14 - model serving and deployment.ipynb` | FastAPI `/health`, `/predict`, model artifact loading, Dockerfile/README 제출 구조 |
 
@@ -260,7 +260,7 @@ diecasting-mlops/
 ### MLflow 목표
 
 현재 `sqlite:///mlflow.db`를 local tracking store로 사용한다.  
-현재는 1차 `rf_binary_baseline` run이 기록되어 있다. 최종 제출 전에는 Zhang Xin이 만든 baseline 비교 결과를 바탕으로 심재광이 tuning run을 추가하고, 최종 serving 후보에 `candidate_for_serving` 또는 `champion` tag를 붙인다.
+현재는 1차 `rf_binary_baseline` run이 기록되어 있다. 최종 제출 전에는 Modeling이 만든 baseline 비교 결과를 바탕으로 심재광이 tuning run을 추가하고, 최종 serving 후보에 `candidate_for_serving` 또는 `champion` tag를 붙인다.
 
 | 기록 항목 | 내용 |
 | :--- | :--- |
@@ -375,11 +375,11 @@ docker run -p 8000:8000 diecasting-api
 
 “원천 데이터에는 공정·센서 변수와 결함 여부 컬럼이 함께 들어 있습니다. 우리는 결함 컬럼을 이용해 정상/불량 label을 만든 뒤, 해당 결함 컬럼은 feature에서 제거해 label leakage를 방지했습니다.”
 
-## 7.2 Zhang Xin: Modeling 담당
+## 7.2 Modeling: Modeling 담당
 
 ### 책임
 
-Zhang Xin 담당자는 **최적화 전 baseline 모델 비교와 XAI 초안**을 맡는다. 목표는 최종 튜닝 모델을 완성하는 것이 아니라, 여러 기본 모델을 같은 split과 metric으로 비교하여 “어떤 모델을 tuning 후보로 넘길지” 판단하는 것이다. 또한 baseline 모델이 어떤 feature를 보고 판단하는지 feature importance와 SHAP으로 설명할 수 있게 만든다.
+Modeling 담당자는 **최적화 전 baseline 모델 비교와 XAI 초안**을 맡는다. 목표는 최종 튜닝 모델을 완성하는 것이 아니라, 여러 기본 모델을 같은 split과 metric으로 비교하여 “어떤 모델을 tuning 후보로 넘길지” 판단하는 것이다. 또한 baseline 모델이 어떤 feature를 보고 판단하는지 feature importance와 SHAP으로 설명할 수 있게 만든다.
 
 ### 참고할 수업 자료
 
@@ -425,7 +425,7 @@ Zhang Xin 담당자는 **최적화 전 baseline 모델 비교와 XAI 초안**을
 | LightGBM | 빠른 boosting baseline 비교 |
 | CatBoost | 가능하면 추가 후보로 검토 |
 
-### Zhang Xin의 범위 밖
+### Modeling의 범위 밖
 
 | 범위 밖 작업 | 담당 |
 | :--- | :--- |
@@ -442,7 +442,7 @@ Zhang Xin 담당자는 **최적화 전 baseline 모델 비교와 XAI 초안**을
 
 ### 책임
 
-심재광은 **학습 이후 tuning, MLflow 기반 실험관리, MLOps/Serving 통합**을 맡는다. Zhang Xin이 baseline 후보 비교와 XAI 초안을 만들면, 심재광은 그 결과를 받아 threshold/hyperparameter tuning을 수행하고, MLflow에 실험을 기록하며, 최종 serving candidate를 API와 UI로 연결한다.
+심재광은 **학습 이후 tuning, MLflow 기반 실험관리, MLOps/Serving 통합**을 맡는다. Modeling이 baseline 후보 비교와 XAI 초안을 만들면, 심재광은 그 결과를 받아 threshold/hyperparameter tuning을 수행하고, MLflow에 실험을 기록하며, 최종 serving candidate를 API와 UI로 연결한다.
 
 ### 참고할 수업 자료
 
@@ -466,7 +466,7 @@ Zhang Xin 담당자는 **최적화 전 baseline 모델 비교와 XAI 초안**을
 
 | 우선순위 | 작업 | 완료 기준 |
 | :--- | :--- | :--- |
-| 1 | Zhang이 넘긴 baseline 후보 중 tuning 대상 확정 | tuning 대상 모델명과 이유 |
+| 1 | baseline comparison에서 넘긴 baseline 후보 중 tuning 대상 확정 | tuning 대상 모델명과 이유 |
 | 2 | threshold tuning 또는 hyperparameter tuning 수행 | tuning 전/후 metric table |
 | 3 | MLflow에 baseline/tuning 결과 기록 | MLflow UI screenshot |
 | 4 | serving candidate 또는 champion tag 정리 | MLflow tag 증거 |
@@ -617,8 +617,8 @@ docker run -p 8000:8000 diecasting-api
 | 발표자료 PDF | 심재광 | outline 있음 | slide 제작 |
 | GitHub Repository | 심재광 | local repo 구조 있음 | public repo 생성/push |
 | 데이터/EDA 자료 | 김병근 | data profile 있음 | EDA plot 보강 |
-| Baseline 모델 비교 | Zhang Xin | RF baseline 있음 | Decision Tree/RF/XGBoost/LightGBM 비교, XAI 초안 |
-| Tuning/모델 최적화 | 심재광 | RF baseline 있음 | Zhang 결과 기반 threshold/hyperparameter tuning |
+| Baseline 모델 비교 | Modeling | RF baseline 있음 | Decision Tree/RF/XGBoost/LightGBM 비교, XAI 초안 |
+| Tuning/모델 최적화 | 심재광 | RF baseline 있음 | baseline comparison result 기반 threshold/hyperparameter tuning |
 | MLflow evidence | 심재광 | `mlflow.db` 있음 | baseline/tuning run 비교, UI screenshot |
 | FastAPI demo | 심재광 | 구현/검증 완료 | 발표 리허설 |
 | Web UI demo | 심재광 | 구현/검증 완료 | 발표 리허설 |
@@ -634,7 +634,7 @@ docker run -p 8000:8000 diecasting-api
 3. 결함 컬럼 제거와 leakage 방지 설명 작성
 4. DVC/data versioning 설명 검토
 
-### Zhang Xin
+### Modeling
 
 1. RF baseline 결과 해석 작성
 2. Decision Tree, RandomForest, XGBoost, LightGBM 기본 모델 비교
@@ -645,7 +645,7 @@ docker run -p 8000:8000 diecasting-api
 ### 심재광
 
 1. GitHub public repository 생성
-2. Zhang이 넘긴 후보 모델을 기준으로 threshold/hyperparameter tuning
+2. baseline comparison에서 넘긴 후보 모델을 기준으로 threshold/hyperparameter tuning
 3. tuning 전/후 결과를 MLflow에 기록
 4. README 최종 실행 검증
 5. MLflow/FastAPI/Streamlit screenshot 확보
