@@ -1,0 +1,94 @@
+schema: '2.0'
+stages:
+  prepare_data:
+    cmd: python -m src.data.prepare_data
+    deps:
+    - path: data/raw/DieCasting_product1.csv
+      hash: md5
+      md5: f7b79ccef16717e4aca85b699f468973
+      size: 147838
+    - path: src/data/prepare_data.py
+      hash: md5
+      md5: 7b679e77ac481dfca27424136ee978e1
+      size: 3003
+    outs:
+    - path: data/processed/diecasting_product1_binary.csv
+      hash: md5
+      md5: b81f5e79da1d5956f355552fc54fc147
+      size: 151488
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 65597b807e75bd7ad9085325e1f9b10b
+      size: 23153
+    - path: data/processed/train.csv
+      hash: md5
+      md5: f068138ed6c388a05ecaac34e3084e71
+      size: 125444
+    - path: data/processed/valid.csv
+      hash: md5
+      md5: 3c9fb4c905f74d0251c9e684e3fe3735
+      size: 23147
+  train_binary:
+    cmd: python -m src.models.train_binary
+    deps:
+    - path: configs/params.yaml
+      hash: md5
+      md5: 6e766cefb7533826226db1dfe1c0d17a
+      size: 1258
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 65597b807e75bd7ad9085325e1f9b10b
+      size: 23153
+    - path: data/processed/train.csv
+      hash: md5
+      md5: f068138ed6c388a05ecaac34e3084e71
+      size: 125444
+    - path: data/processed/valid.csv
+      hash: md5
+      md5: 3c9fb4c905f74d0251c9e684e3fe3735
+      size: 23147
+    - path: src/models/train_binary.py
+      hash: md5
+      md5: c71239309570281359a3fb2c8fb9e67c
+      size: 9799
+    outs:
+    - path: artifacts/models/metadata.json
+      hash: md5
+      md5: 8c957e3a93736563bd48d736a390a46b
+      size: 2116
+    - path: artifacts/models/model.joblib
+      hash: md5
+      md5: a02ce52f41c4ec066663906e22fce5ea
+      size: 3126681
+    - path: artifacts/plots/confusion_matrix.png
+      hash: md5
+      md5: 92aa0341bf6a9c696efc01c2d6d933e5
+      size: 21618
+    - path: artifacts/plots/feature_importance.png
+      hash: md5
+      md5: 4bc2fba92716aba5a4215d30f65e7aa3
+      size: 56472
+    - path: artifacts/plots/roc_curve.png
+      hash: md5
+      md5: 015a866b2ddcad40c2748e8fab6ef951
+      size: 38691
+    - path: artifacts/reports/defect_request.json
+      hash: md5
+      md5: 389c1a421872dbadae0383cf3f470a62
+      size: 858
+    - path: artifacts/reports/feature_importance.json
+      hash: md5
+      md5: 761329c59d123896302489fa3092b35c
+      size: 2247
+    - path: artifacts/reports/metrics.json
+      hash: md5
+      md5: 24a3a7853e14cbe79c8da247f1c5fd0d
+      size: 1112
+    - path: artifacts/reports/normal_request.json
+      hash: md5
+      md5: 363e1b90f9c32ab6a8dd0c4f15db62db
+      size: 858
+    - path: artifacts/reports/sample_inputs.json
+      hash: md5
+      md5: 3a6928cb465a1af5f28dc38f2ed6ad3a
+      size: 1723
