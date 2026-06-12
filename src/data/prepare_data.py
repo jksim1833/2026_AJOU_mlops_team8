@@ -1,100 +1,130 @@
-﻿from pathlib import Path
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
 
 import pandas as pd
-from imblearn.over_sampling import RandomOverSampler
+import yaml
 from sklearn.model_selection import train_test_split
 
 
-RAW_PATH = Path("data/raw/DieCasting_product1.csv")
-PROCESSED_DIR = Path("data/processed")
-
-ORIGINAL_LABEL_COLUMN = "label"
-TARGET_COLUMN = "defect_label"
-RANDOM_STATE = 42
+ROOT = Path(__file__).resolve().parents[2]
+CONFIG_PATH = ROOT / "configs" / "params.yaml"
 
 
-def main():
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+DEFECT_KEYWORDS = [
+    "Short_Shot",
+    "Bubble",
+    "Exfoliation",
+    "Blow_Hole",
+    "Stain",
+    "Dent",
+    "Deformation",
+    "Contamination",
+    "Impurity",
+    "Crack",
+    "Scratch",
+    "Buring_Mark",
+    "Burning_Mark",
+    "Inclusions",
+]
 
-    df = pd.read_csv(RAW_PATH)
-    df.columns = df.columns.str.strip()
 
-    print("===== Raw data info =====")
-    print("Shape:", df.shape)
-    print("Columns:", list(df.columns))
+def load_config(path: Path = CONFIG_PATH) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
-    if ORIGINAL_LABEL_COLUMN not in df.columns:
-        raise ValueError(f"'{ORIGINAL_LABEL_COLUMN}' column not found.")
 
-    print("\n===== Original label distribution =====")
-    print(df[ORIGINAL_LABEL_COLUMN].value_counts().sort_index())
+def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df.columns = [col.strip().replace(" ", "_") for col in df.columns]
+    return df
 
-    print("\n===== Missing values by column =====")
-    print(df.isnull().sum())
 
-    # label 기준:
-    # 0 = normal
-    # 1, 2 = defect
-    df[TARGET_COLUMN] = (df[ORIGINAL_LABEL_COLUMN] != 0).astype(int)
+def find_defect_columns(df: pd.DataFrame) -> list[str]:
+    cols: list[str] = []
+    for col in df.columns:
+        normalized = col.lower()
+        if any(keyword.lower() in normalized for keyword in DEFECT_KEYWORDS):
+            cols.append(col)
+    return cols
 
-    print("\n===== Binary label distribution =====")
-    print(df[TARGET_COLUMN].value_counts().sort_index())
 
-    df = df.drop(columns=[ORIGINAL_LABEL_COLUMN])
+def build_binary_dataset(df: pd.DataFrame, target_column: str) -> tuple[pd.DataFrame, list[str]]:
+    df = clean_columns(df)
+    defect_columns = find_defect_columns(df)
+    if not defect_columns:
+        raise ValueError("No defect columns found. Check raw data schema.")
 
-    X = df.drop(columns=[TARGET_COLUMN])
-    y = df[TARGET_COLUMN]
+    defect_frame = df[defect_columns].apply(pd.to_numeric, errors="coerce").fillna(0)
+    df[target_column] = (defect_frame.sum(axis=1) > 0).astype(int)
 
-    X_train, X_temp, y_train, y_temp = train_test_split(
-        X,
-        y,
-        test_size=0.30,
-        random_state=RANDOM_STATE,
-        stratify=y,
+    feature_df = df.drop(columns=defect_columns)
+    numeric_feature_df = feature_df.apply(pd.to_numeric, errors="coerce")
+    numeric_feature_df[target_column] = df[target_column]
+    numeric_feature_df = numeric_feature_df.dropna(axis=1, how="all")
+    numeric_feature_df = numeric_feature_df.fillna(numeric_feature_df.median(numeric_only=True))
+    return numeric_feature_df, defect_columns
+
+
+def split_dataset(df: pd.DataFrame, target_column: str, cfg: dict[str, Any]) -> dict[str, pd.DataFrame]:
+    random_state = int(cfg["data"]["random_state"])
+    test_size = float(cfg["data"]["test_size"])
+    validation_size = float(cfg["data"]["validation_size"])
+
+    train_valid, test = train_test_split(
+        df,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=df[target_column],
     )
-
-    X_valid, X_test, y_valid, y_test = train_test_split(
-        X_temp,
-        y_temp,
-        test_size=0.50,
-        random_state=RANDOM_STATE,
-        stratify=y_temp,
+    valid_ratio_within_train_valid = validation_size / (1.0 - test_size)
+    train, valid = train_test_split(
+        train_valid,
+        test_size=valid_ratio_within_train_valid,
+        random_state=random_state,
+        stratify=train_valid[target_column],
     )
+    return {"train": train, "valid": valid, "test": test}
 
-    print("\n===== Before oversampling =====")
-    print("train:", y_train.value_counts().sort_index().to_dict())
-    print("valid:", y_valid.value_counts().sort_index().to_dict())
-    print("test:", y_test.value_counts().sort_index().to_dict())
 
-    oversampler = RandomOverSampler(random_state=RANDOM_STATE)
-    X_train_os, y_train_os = oversampler.fit_resample(X_train, y_train)
+def write_split_files(splits: dict[str, pd.DataFrame], processed_dir: Path) -> None:
+    for name, split_df in splits.items():
+        split_df.to_csv(processed_dir / f"{name}.csv", index=False)
 
-    train = X_train_os.copy()
-    train[TARGET_COLUMN] = y_train_os
 
-    valid = X_valid.copy()
-    valid[TARGET_COLUMN] = y_valid
+def main() -> None:
+    cfg = load_config()
+    raw_path = ROOT / cfg["data"]["raw_path"]
+    processed_path = ROOT / cfg["data"]["processed_path"]
+    processed_dir = processed_path.parent
+    target_column = cfg["data"]["target_column"]
+    processed_dir.mkdir(parents=True, exist_ok=True)
 
-    test = X_test.copy()
-    test[TARGET_COLUMN] = y_test
+    raw_df = pd.read_csv(raw_path)
+    processed_df, defect_columns = build_binary_dataset(raw_df, target_column)
+    processed_df.to_csv(processed_path, index=False)
+    splits = split_dataset(processed_df, target_column, cfg)
+    write_split_files(splits, processed_dir)
 
-    binary = df.copy()
-
-    binary.to_csv(PROCESSED_DIR / "diecasting_product1_binary.csv", index=False)
-    train.to_csv(PROCESSED_DIR / "train.csv", index=False)
-    valid.to_csv(PROCESSED_DIR / "valid.csv", index=False)
-    test.to_csv(PROCESSED_DIR / "test.csv", index=False)
-
-    print("\n===== After oversampling =====")
-    print("train:", train[TARGET_COLUMN].value_counts().sort_index().to_dict())
-    print("valid:", valid[TARGET_COLUMN].value_counts().sort_index().to_dict())
-    print("test:", test[TARGET_COLUMN].value_counts().sort_index().to_dict())
-
-    print("\n===== Saved files =====")
-    print(PROCESSED_DIR / "diecasting_product1_binary.csv")
-    print(PROCESSED_DIR / "train.csv")
-    print(PROCESSED_DIR / "valid.csv")
-    print(PROCESSED_DIR / "test.csv")
+    report = {
+        "source": str(raw_path.relative_to(ROOT)),
+        "processed": str(processed_path.relative_to(ROOT)),
+        "rows": int(processed_df.shape[0]),
+        "columns": int(processed_df.shape[1]),
+        "target_column": target_column,
+        "class_counts": processed_df[target_column].value_counts().sort_index().to_dict(),
+        "defect_columns_removed": defect_columns,
+        "split_counts": {
+            name: split[target_column].value_counts().sort_index().to_dict()
+            for name, split in splits.items()
+        },
+    }
+    report_path = ROOT / "artifacts" / "reports" / "data_profile.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(report, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

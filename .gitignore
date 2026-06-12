@@ -25,3 +25,15 @@ artifacts/models/*
 artifacts/plots/*
 artifacts/reports/*
 artifacts/examples/*
+
+data/raw/*.csv
+data/processed/*.csv
+
+artifacts/models/*
+artifacts/plots/*
+artifacts/reports/*
+artifacts/examples/*
+
+mlflow.db
+mlruns/
+mlartifacts/
