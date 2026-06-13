@@ -11,7 +11,7 @@
 | 역할 | 담당자 | 주요 책임 |
 | :--- | :--- | :--- |
 | Data | 김병근 | 데이터 출처, EDA, binary label, split, DVC 전략 |
-| Modeling | Zhang Xin | RF baseline, 후보 모델 비교, champion 선정 |
+| Modeling | Zhang Xin | RF baseline, 후보 모델 비교, tuning 후보 선정, XAI 초안 |
 | MLOps/Serving | 심재광 | GitHub 구조, MLflow, FastAPI, Docker |
 | 발표/문서화 | 심재광 | 보고서, 발표자료, demo script |
 
@@ -45,6 +45,49 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+## One-command Local Run on Windows
+
+From the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run_local.ps1
+```
+
+Open this repository in PyCharm:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\open_pycharm.ps1
+```
+
+PyCharm shared run configurations are included under `.run/`:
+
+- `FastAPI`
+- `MLflow UI`
+- `Streamlit Dashboard`
+- `Baseline XAI`
+
+This starts the local demo services:
+
+- MLflow UI: `http://127.0.0.1:5000`
+- FastAPI Swagger: `http://127.0.0.1:8000/docs`
+- Streamlit UI: `http://127.0.0.1:8501`
+
+To stop services:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\stop_local.ps1
+```
+
+To rerun the full local data/model/XAI pipeline, first place the KAMP raw CSV at
+`data/raw/DieCasting_Quality_Raw_Data_product1.csv`, then run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run_local.ps1 -RunPipeline
+```
+
+The dataset is KAMP `DATASET_SEQ=55`, "주조 품질보증 AI 데이터셋":
+`https://www.kamp-ai.kr/aidataDetail?DATASET_SEQ=55`
+
 ## 1. Prepare Data
 
 Raw data는 `data/raw/DieCasting_Quality_Raw_Data_product1.csv`에 둡니다. 결함 컬럼 중 하나라도 1이면 `defect_label=1`, 모두 0이면 `defect_label=0`으로 생성합니다. 결함 컬럼은 feature에서 제거합니다.
@@ -66,6 +109,31 @@ python -m src.data.prepare_data
 ```bash
 python -m src.models.train_binary
 ```
+
+## 2-1. Baseline Comparison and SHAP XAI
+
+The modeling task compares multiple baseline candidates on the same
+train/validation/test split, selects a tuning candidate by validation F1, and
+generates SHAP-based global/local explanations.
+
+```bash
+python -m src.models.compare_baselines_xai
+```
+
+Main outputs:
+
+- `artifacts/reports/baseline_metric_table.md`
+- `artifacts/reports/baseline_comparison.csv`
+- `artifacts/reports/candidate_handoff_note.md`
+- `artifacts/reports/baseline_xai_report.md`
+- `artifacts/reports/xai_feature_interpretation.md`
+- `artifacts/reports/shap_local_explanation.md`
+- `artifacts/plots/baseline_validation_metrics.png`
+- `artifacts/plots/baseline_confusion_matrices.png`
+- `artifacts/plots/shap_summary_bar.png`
+- `artifacts/plots/shap_beeswarm.png`
+- `artifacts/plots/shap_waterfall_defect_sample.png`
+- `artifacts/models/baseline_candidate.joblib`
 
 MLflow UI:
 

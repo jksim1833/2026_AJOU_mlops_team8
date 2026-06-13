@@ -31,3 +31,30 @@ stages:
       - artifacts/plots/confusion_matrix.png
       - artifacts/plots/roc_curve.png
       - artifacts/plots/feature_importance.png
+
+  compare_baselines_xai:
+    cmd: python -m src.models.compare_baselines_xai
+    deps:
+      - data/processed/train.csv
+      - data/processed/valid.csv
+      - data/processed/test.csv
+      - src/models/compare_baselines_xai.py
+      - configs/params.yaml
+    outs:
+      - artifacts/models/baseline_candidate.joblib
+      - artifacts/models/baseline_candidate_metadata.json
+      - artifacts/reports/baseline_comparison.csv
+      - artifacts/reports/baseline_comparison.json
+      - artifacts/reports/baseline_metric_table.md
+      - artifacts/reports/candidate_handoff_note.md
+      - artifacts/reports/xai_feature_interpretation.csv
+      - artifacts/reports/xai_feature_interpretation.json
+      - artifacts/reports/xai_feature_interpretation.md
+      - artifacts/reports/shap_local_explanation.json
+      - artifacts/reports/shap_local_explanation.md
+      - artifacts/plots/baseline_validation_metrics.png
+      - artifacts/plots/baseline_confusion_matrices.png
+      - artifacts/plots/shap_summary_bar.png
+      - artifacts/plots/shap_beeswarm.png
+      - artifacts/plots/shap_waterfall_defect_sample.png
+      - artifacts/reports/baseline_xai_report.md
