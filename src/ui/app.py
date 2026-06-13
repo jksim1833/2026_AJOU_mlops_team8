@@ -20,6 +20,7 @@ BASELINE_TABLE_PATH = REPORT_DIR / "baseline_metric_table.md"
 CANDIDATE_NOTE_PATH = REPORT_DIR / "candidate_handoff_note.md"
 XAI_INTERPRETATION_PATH = REPORT_DIR / "xai_feature_interpretation.md"
 LOCAL_EXPLANATION_PATH = REPORT_DIR / "shap_local_explanation.md"
+TUNING_REPORT_PATH = REPORT_DIR / "logistic_tuning_report.md"
 DATA_PROFILE_PATH = REPORT_DIR / "data_profile.json"
 METADATA_PATH = MODEL_DIR / "metadata.json"
 
@@ -94,10 +95,18 @@ def metrics_tab() -> None:
     data_profile = load_json(DATA_PROFILE_PATH)
 
     if metadata:
-        c1, c2, c3 = st.columns(3)
+        st.caption(
+            f"Champion model: `{metadata.get('model_version', '-')}` | "
+            f"Data: `{metadata.get('data_version', '-')}`"
+        )
+        c1, c2, c3, c4 = st.columns(4)
         c1.metric("Model version", metadata.get("model_version", "-"))
         c2.metric("Data version", metadata.get("data_version", "-"))
         c3.metric("Feature count", len(metadata.get("features", [])))
+        threshold = metadata.get("decision_threshold")
+        c4.metric("Decision threshold", f"{threshold:.2f}" if isinstance(threshold, float) else "-")
+        if metadata.get("mlflow_run_id"):
+            st.caption(f"MLflow champion run: `{metadata['mlflow_run_id']}`")
 
     if data_profile:
         counts = data_profile.get("class_counts", {})
@@ -142,6 +151,11 @@ def xai_tab() -> None:
     candidate_note = load_text(CANDIDATE_NOTE_PATH)
     xai_interpretation = load_text(XAI_INTERPRETATION_PATH)
     local_explanation = load_text(LOCAL_EXPLANATION_PATH)
+    tuning_report = load_text(TUNING_REPORT_PATH)
+
+    st.subheader("Champion Tuning")
+    st.markdown(tuning_report or "Run `python -m src.models.tune_logistic` to generate tuning results.")
+    show_plot(PLOT_DIR / "logistic_threshold_tuning.png", "Validation threshold tuning")
 
     st.subheader("Baseline Comparison")
     if baseline_table:
@@ -181,10 +195,12 @@ def artifacts_tab() -> None:
         CANDIDATE_NOTE_PATH,
         XAI_INTERPRETATION_PATH,
         LOCAL_EXPLANATION_PATH,
+        TUNING_REPORT_PATH,
         PLOT_DIR / "confusion_matrix.png",
         PLOT_DIR / "roc_curve.png",
         PLOT_DIR / "feature_importance.png",
         PLOT_DIR / "shap_summary_bar.png",
+        PLOT_DIR / "logistic_threshold_tuning.png",
         MODEL_DIR / "model.joblib",
         MODEL_DIR / "baseline_candidate.joblib",
     ]:

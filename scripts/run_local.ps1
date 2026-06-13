@@ -119,6 +119,7 @@ if ($RunPipeline) {
     & $python -m src.data.prepare_data
     & $python -m src.models.train_binary
     & $python -m src.models.compare_baselines_xai
+    & $python -m src.models.tune_logistic
 } elseif ((-not (Test-Path $modelPath)) -and (Test-Path $rawPath)) {
     & $python -m src.data.prepare_data
     & $python -m src.models.train_binary

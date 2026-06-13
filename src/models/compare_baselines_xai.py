@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -236,11 +237,32 @@ def evaluate(model: BaseEstimator, X: pd.DataFrame, y: pd.Series) -> dict[str, A
 
 
 def flatten_record(record: dict[str, Any]) -> dict[str, Any]:
-    row = {"model": record["model"]}
+    row = {
+        "model": record["model"],
+        "fit_time_sec": record["timing"]["fit_time_sec"],
+        "validation_predict_time_sec": record["timing"]["validation_predict_time_sec"],
+        "test_predict_time_sec": record["timing"]["test_predict_time_sec"],
+    }
     for split in ["validation", "test"]:
         for metric, value in record[split].items():
             row[f"{split}_{metric}"] = value
     return row
+
+
+def build_leaderboard_dataframe(records: list[dict[str, Any]]) -> pd.DataFrame:
+    required_timing = {
+        "fit_time_sec",
+        "validation_predict_time_sec",
+        "test_predict_time_sec",
+    }
+    for record in records:
+        missing = required_timing - set(record.get("timing", {}))
+        if missing:
+            raise ValueError(f"Missing leaderboard timing fields: {sorted(missing)}")
+    return pd.DataFrame([flatten_record(record) for record in records]).sort_values(
+        by=["validation_f1", "validation_roc_auc"],
+        ascending=[False, False],
+    )
 
 
 def format_value(value: Any) -> str:
@@ -574,11 +596,7 @@ def write_reports(
 ) -> None:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     PLOT_DIR.mkdir(parents=True, exist_ok=True)
-    flat_records = [flatten_record(record) for record in records]
-    df = pd.DataFrame(flat_records).sort_values(
-        by=["validation_f1", "validation_roc_auc"],
-        ascending=[False, False],
-    )
+    df = build_leaderboard_dataframe(records)
     df.to_csv(REPORT_DIR / "baseline_comparison.csv", index=False)
     (REPORT_DIR / "baseline_comparison.json").write_text(
         json.dumps(
@@ -603,6 +621,9 @@ def write_reports(
         "test_roc_auc",
         "test_recall",
         "test_precision",
+        "fit_time_sec",
+        "validation_predict_time_sec",
+        "test_predict_time_sec",
     ]
     table_rows = df[metric_columns].to_dict(orient="records")
     metric_table = [
@@ -748,13 +769,24 @@ def train_and_compare(args: argparse.Namespace) -> dict[str, Any]:
     fitted_models: dict[str, BaseEstimator] = {}
     for spec in specs:
         model = spec.estimator
+        fit_started = time.perf_counter()
         model.fit(X_train, y_train)
+        fit_time = time.perf_counter() - fit_started
+        valid_started = time.perf_counter()
         valid_metrics = evaluate(model, X_valid, y_valid)
+        validation_predict_time = time.perf_counter() - valid_started
+        test_started = time.perf_counter()
         test_metrics = evaluate(model, X_test, y_test)
+        test_predict_time = time.perf_counter() - test_started
         y_test_pred = np.asarray(model.predict(X_test)).astype(int)
         record = {
             "model": spec.name,
             "params": spec.params,
+            "timing": {
+                "fit_time_sec": fit_time,
+                "validation_predict_time_sec": validation_predict_time,
+                "test_predict_time_sec": test_predict_time,
+            },
             "validation": valid_metrics,
             "test": test_metrics,
             "classification_report": classification_report(
@@ -780,7 +812,11 @@ def train_and_compare(args: argparse.Namespace) -> dict[str, Any]:
                 for key, value in test_metrics.items():
                     if isinstance(value, (int, float)):
                         mlflow.log_metric(f"test_{key}", value)
+                mlflow.log_metric("fit_time_sec", fit_time)
+                mlflow.log_metric("validation_predict_time_sec", validation_predict_time)
+                mlflow.log_metric("test_predict_time_sec", test_predict_time)
                 mlflow.set_tag("stage", "baseline_comparison")
+                mlflow.set_tag("workflow", "automl_lite_leaderboard")
 
     records.sort(
         key=lambda item: (item["validation"]["f1"], item["validation"]["roc_auc"]),

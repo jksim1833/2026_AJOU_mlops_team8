@@ -153,16 +153,13 @@ def main() -> None:
     mlflow.set_experiment(cfg["tracking"]["experiment_name"])
 
     artifact_paths = cfg["artifacts"]
-    model_path = ROOT / artifact_paths["model_path"]
-    metadata_path = ROOT / artifact_paths["metadata_path"]
-    metrics_path = ROOT / artifact_paths["metrics_path"]
-    sample_inputs_path = ROOT / artifact_paths["sample_inputs_path"]
-    normal_request_path = ROOT / artifact_paths["normal_request_path"]
-    defect_request_path = ROOT / artifact_paths["defect_request_path"]
-    feature_importance_path = ROOT / artifact_paths["feature_importance_path"]
-    confusion_matrix_path = ROOT / artifact_paths["confusion_matrix_path"]
-    roc_curve_path = ROOT / artifact_paths["roc_curve_path"]
-    feature_importance_plot_path = ROOT / artifact_paths["feature_importance_plot_path"]
+    model_path = ROOT / artifact_paths["rf_model_path"]
+    metadata_path = ROOT / artifact_paths["rf_metadata_path"]
+    metrics_path = ROOT / artifact_paths["rf_metrics_path"]
+    feature_importance_path = ROOT / artifact_paths["rf_feature_importance_path"]
+    confusion_matrix_path = ROOT / artifact_paths["rf_confusion_matrix_path"]
+    roc_curve_path = ROOT / artifact_paths["rf_roc_curve_path"]
+    feature_importance_plot_path = ROOT / artifact_paths["rf_feature_importance_plot_path"]
 
     with mlflow.start_run(run_name="rf_binary_baseline") as run:
         model.fit(X_train, y_train)
@@ -179,8 +176,6 @@ def main() -> None:
             feature_importance_path,
             feature_importance_plot_path,
         )
-        save_sample_inputs(model, X_test, y_test, sample_inputs_path, normal_request_path, defect_request_path)
-
         model_path.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(model, model_path)
 
@@ -194,8 +189,9 @@ def main() -> None:
 
         metadata = {
             "project": cfg["project"]["name"],
-            "model_version": cfg["project"]["model_version"],
+            "model_version": "rf_binary_baseline_v2",
             "data_version": cfg["project"]["data_version"],
+            "artifact_role": "baseline_only",
             "target": {"0": "normal", "1": "defect"},
             "features": list(X_train.columns),
             "run_id": run.info.run_id,
@@ -214,8 +210,8 @@ def main() -> None:
             mlflow.log_metric(f"valid_{key}", value)
         for key, value in test_metrics.items():
             mlflow.log_metric(f"test_{key}", value)
-        mlflow.set_tag("stage", "champion")
-        mlflow.set_tag("serving_candidate", "true")
+        mlflow.set_tag("stage", "baseline")
+        mlflow.set_tag("serving_candidate", "false")
         mlflow.log_artifact(str(model_path), artifact_path="model")
         mlflow.log_artifact(str(metadata_path), artifact_path="model")
         mlflow.log_artifact(str(metrics_path), artifact_path="reports")
@@ -223,8 +219,6 @@ def main() -> None:
         mlflow.log_artifact(str(roc_curve_path), artifact_path="plots")
         mlflow.log_artifact(str(feature_importance_plot_path), artifact_path="plots")
         mlflow.log_artifact(str(feature_importance_path), artifact_path="reports")
-        mlflow.log_artifact(str(normal_request_path), artifact_path="examples")
-        mlflow.log_artifact(str(defect_request_path), artifact_path="examples")
 
     print(json.dumps({"validation": valid_metrics, "test": test_metrics}, ensure_ascii=False, indent=2))
 

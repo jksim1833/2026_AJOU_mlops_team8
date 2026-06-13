@@ -21,16 +21,13 @@ stages:
       - src/models/train_binary.py
       - configs/params.yaml
     outs:
-      - artifacts/models/model.joblib
-      - artifacts/models/metadata.json
-      - artifacts/reports/metrics.json
-      - artifacts/reports/feature_importance.json
-      - artifacts/reports/sample_inputs.json
-      - artifacts/reports/normal_request.json
-      - artifacts/reports/defect_request.json
-      - artifacts/plots/confusion_matrix.png
-      - artifacts/plots/roc_curve.png
-      - artifacts/plots/feature_importance.png
+      - artifacts/models/rf_baseline.joblib
+      - artifacts/models/rf_baseline_metadata.json
+      - artifacts/reports/rf_baseline_metrics.json
+      - artifacts/reports/rf_baseline_feature_importance.json
+      - artifacts/plots/rf_baseline_confusion_matrix.png
+      - artifacts/plots/rf_baseline_roc_curve.png
+      - artifacts/plots/rf_baseline_feature_importance.png
 
   compare_baselines_xai:
     cmd: python -m src.models.compare_baselines_xai
@@ -38,6 +35,7 @@ stages:
       - data/processed/train.csv
       - data/processed/valid.csv
       - data/processed/test.csv
+      - artifacts/models/rf_baseline.joblib
       - src/models/compare_baselines_xai.py
       - configs/params.yaml
     outs:
@@ -58,3 +56,31 @@ stages:
       - artifacts/plots/shap_beeswarm.png
       - artifacts/plots/shap_waterfall_defect_sample.png
       - artifacts/reports/baseline_xai_report.md
+
+  tune_logistic:
+    cmd: python -m src.models.tune_logistic
+    deps:
+      - data/processed/train.csv
+      - data/processed/valid.csv
+      - data/processed/test.csv
+      - artifacts/models/baseline_candidate.joblib
+      - artifacts/models/baseline_candidate_metadata.json
+      - src/models/tune_logistic.py
+      - configs/params.yaml
+    outs:
+      - artifacts/models/model.joblib
+      - artifacts/models/metadata.json
+      - artifacts/reports/metrics.json
+      - artifacts/reports/feature_importance.json
+      - artifacts/reports/sample_inputs.json
+      - artifacts/reports/normal_request.json
+      - artifacts/reports/defect_request.json
+      - artifacts/reports/logistic_tuning_results.csv
+      - artifacts/reports/logistic_tuning_report.md
+      - artifacts/reports/logistic_threshold_results.csv
+      - artifacts/reports/logistic_coefficients.json
+      - artifacts/reports/logistic_permutation_importance.json
+      - artifacts/plots/confusion_matrix.png
+      - artifacts/plots/roc_curve.png
+      - artifacts/plots/feature_importance.png
+      - artifacts/plots/logistic_threshold_tuning.png

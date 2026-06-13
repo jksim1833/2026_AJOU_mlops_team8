@@ -1,7 +1,7 @@
 project:
   name: diecasting_binary_defect_classification
-  data_version: binary_product1_v1
-  model_version: rf_binary_v1
+  data_version: binary_product1_v2_dedup
+  model_version: logistic_champion_v1
 
 data:
   raw_path: data/raw/DieCasting_Quality_Raw_Data_product1.csv
@@ -21,11 +21,27 @@ model:
   class_weight: balanced
   random_state: 42
 
+tuning:
+  model_name: LogisticRegression
+  search_iterations: 30
+  cv_folds: 5
+  threshold_min: 0.05
+  threshold_max: 0.95
+  threshold_step: 0.01
+  random_state: 42
+
 tracking:
   experiment_name: diecasting_binary_defect_classification
   tracking_uri: sqlite:///mlflow.db
 
 artifacts:
+  rf_model_path: artifacts/models/rf_baseline.joblib
+  rf_metadata_path: artifacts/models/rf_baseline_metadata.json
+  rf_metrics_path: artifacts/reports/rf_baseline_metrics.json
+  rf_feature_importance_path: artifacts/reports/rf_baseline_feature_importance.json
+  rf_confusion_matrix_path: artifacts/plots/rf_baseline_confusion_matrix.png
+  rf_roc_curve_path: artifacts/plots/rf_baseline_roc_curve.png
+  rf_feature_importance_plot_path: artifacts/plots/rf_baseline_feature_importance.png
   model_path: artifacts/models/model.joblib
   metadata_path: artifacts/models/metadata.json
   metrics_path: artifacts/reports/metrics.json
@@ -36,3 +52,9 @@ artifacts:
   confusion_matrix_path: artifacts/plots/confusion_matrix.png
   roc_curve_path: artifacts/plots/roc_curve.png
   feature_importance_plot_path: artifacts/plots/feature_importance.png
+  tuning_results_path: artifacts/reports/logistic_tuning_results.csv
+  tuning_report_path: artifacts/reports/logistic_tuning_report.md
+  threshold_results_path: artifacts/reports/logistic_threshold_results.csv
+  threshold_plot_path: artifacts/plots/logistic_threshold_tuning.png
+  coefficient_path: artifacts/reports/logistic_coefficients.json
+  permutation_importance_path: artifacts/reports/logistic_permutation_importance.json

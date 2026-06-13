@@ -85,8 +85,9 @@ def predict(request: PredictionRequest) -> PredictionResponse:
         )
 
     row = pd.DataFrame([{feature: request.features[feature] for feature in expected_features}])
-    prediction = int(model.predict(row)[0])
     proba = model.predict_proba(row)[0]
+    decision_threshold = float(metadata.get("decision_threshold", 0.5))
+    prediction = int(float(proba[1]) >= decision_threshold)
     labels = metadata["target"]
     label_name = labels[str(prediction)]
 
