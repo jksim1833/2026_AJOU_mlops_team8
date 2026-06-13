@@ -5,16 +5,16 @@ stages:
     deps:
     - path: configs/params.yaml
       hash: md5
-      md5: 6e766cefb7533826226db1dfe1c0d17a
-      size: 1258
+      md5: 1bdbe5ad24ffd008245a543a5f0d397c
+      size: 1220
     - path: data/raw/DieCasting_Quality_Raw_Data_product1.csv
       hash: md5
       md5: 0f700634894dc49cf341003be627a8b6
       size: 718893
     - path: src/data/prepare_data.py
       hash: md5
-      md5: a1d7303421d6946366a7d98ff60ec0f5
-      size: 4463
+      md5: c4a93706d28eb2cd1d7f6028c43649ac
+      size: 4332
     outs:
     - path: artifacts/reports/data_profile.json
       hash: md5
@@ -41,8 +41,8 @@ stages:
     deps:
     - path: configs/params.yaml
       hash: md5
-      md5: 6e766cefb7533826226db1dfe1c0d17a
-      size: 1258
+      md5: 1bdbe5ad24ffd008245a543a5f0d397c
+      size: 1220
     - path: data/processed/test.csv
       hash: md5
       md5: c77499bd281190c74ad2d18878edf233
@@ -57,46 +57,138 @@ stages:
       size: 78281
     - path: src/models/train_binary.py
       hash: md5
-      md5: c71239309570281359a3fb2c8fb9e67c
-      size: 9799
+      md5: 1fc0630c3e81f1aaf4cbaaadc80bcc63
+      size: 9566
     outs:
     - path: artifacts/models/metadata.json
       hash: md5
-      md5: 3c823f8910d37a70560d639504d0b6b2
-      size: 2139
+      md5: a06d8c327460dddc82d358228d7e28fb
+      size: 2137
     - path: artifacts/models/model.joblib
       hash: md5
-      md5: 95373ff080b6f8347bf587b944a34fdb
-      size: 4161801
+      md5: 74d59c65b5018b8aa468ef393fb91070
+      size: 3846329
     - path: artifacts/plots/confusion_matrix.png
       hash: md5
-      md5: 1f6f6c6abd8c55eba4e78996c36ae16e
-      size: 22527
+      md5: 0fdf1c661f3ae140fbf6d3fcf5c0ab64
+      size: 21079
     - path: artifacts/plots/feature_importance.png
       hash: md5
-      md5: cbe2fc41e0d88a33a7d1450728643766
-      size: 56295
+      md5: 6e9e3959e11acb2fac4f41a83f8d0eaa
+      size: 50409
     - path: artifacts/plots/roc_curve.png
       hash: md5
-      md5: 20674d811d90db90076249efd92d2f99
-      size: 41172
+      md5: 16b62b15950396158748574d02ed135c
+      size: 38128
     - path: artifacts/reports/defect_request.json
       hash: md5
-      md5: 7aa9d81ad35d324b1afe1332a87a737e
-      size: 857
+      md5: 89252be3b5089de463311d15a124b364
+      size: 856
     - path: artifacts/reports/feature_importance.json
       hash: md5
-      md5: 3c8c59ec3af7d7b543350f12344e3e8d
-      size: 2248
+      md5: 0a222f3d299121403e1e3d82841916aa
+      size: 2249
     - path: artifacts/reports/metrics.json
       hash: md5
-      md5: cfac4ae50388cf642a60704d0c5f9bcc
-      size: 1143
+      md5: d30b14167e5ff8df5a30c97fd25e4244
+      size: 1140
     - path: artifacts/reports/normal_request.json
       hash: md5
       md5: 9e57d6c537a1071c766ec3171892b7dc
       size: 858
     - path: artifacts/reports/sample_inputs.json
       hash: md5
-      md5: 87505023d21183bdcbbd81ccce0f7c30
-      size: 1722
+      md5: 378348a4e41597f8d8764728f1ab25ec
+      size: 1721
+  compare_baselines_xai:
+    cmd: python -m src.models.compare_baselines_xai
+    deps:
+    - path: configs/params.yaml
+      hash: md5
+      md5: 1bdbe5ad24ffd008245a543a5f0d397c
+      size: 1220
+    - path: data/processed/test.csv
+      hash: md5
+      md5: c77499bd281190c74ad2d18878edf233
+      size: 78416
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 0332d6d8c1c85a0d1ae4d0036340c255
+      size: 363372
+    - path: data/processed/valid.csv
+      hash: md5
+      md5: 4865eec827cdc779d80a1b7e83ca34c3
+      size: 78281
+    - path: src/models/compare_baselines_xai.py
+      hash: md5
+      md5: 7ef8809448d37bfe046d6a9b65f2a50e
+      size: 32260
+    outs:
+    - path: artifacts/models/baseline_candidate.joblib
+      hash: md5
+      md5: bc2683200d2bdf850efcb834ba0b42d8
+      size: 1029116
+    - path: artifacts/models/baseline_candidate_metadata.json
+      hash: md5
+      md5: 12b797f7becdcb694bc1cc1d563ecfdf
+      size: 1525
+    - path: artifacts/plots/baseline_confusion_matrices.png
+      hash: md5
+      md5: 4b33ff391c2031402562aff3bfa60a5a
+      size: 98771
+    - path: artifacts/plots/baseline_validation_metrics.png
+      hash: md5
+      md5: c37154b0ba16dacf122dadb461e367c2
+      size: 49927
+    - path: artifacts/plots/shap_beeswarm.png
+      hash: md5
+      md5: a9ef8452a9645875e095653730a12465
+      size: 209034
+    - path: artifacts/plots/shap_summary_bar.png
+      hash: md5
+      md5: d75c9a5777140a2f20b71d3f9c841f61
+      size: 67029
+    - path: artifacts/plots/shap_waterfall_defect_sample.png
+      hash: md5
+      md5: 39c7fd1ab23f457043b20fad0e08d0c6
+      size: 108078
+    - path: artifacts/reports/baseline_comparison.csv
+      hash: md5
+      md5: 5ad7b23d9b84a4bcd31b7743f0ba52fc
+      size: 1398
+    - path: artifacts/reports/baseline_comparison.json
+      hash: md5
+      md5: 3e4a44f307dccf6174b179fe478a5233
+      size: 8572
+    - path: artifacts/reports/baseline_metric_table.md
+      hash: md5
+      md5: 22f1558b4a0112efad29d879569938fb
+      size: 724
+    - path: artifacts/reports/baseline_xai_report.md
+      hash: md5
+      md5: f261e039d61413ca0e69acecf86ba61d
+      size: 2958
+    - path: artifacts/reports/candidate_handoff_note.md
+      hash: md5
+      md5: 0a9f55b60cea87a17f180dbbe089233a
+      size: 640
+    - path: artifacts/reports/shap_local_explanation.json
+      hash: md5
+      md5: a6e53d66ff25bef4b7e5c84b25c785e8
+      size: 1370
+    - path: artifacts/reports/shap_local_explanation.md
+      hash: md5
+      md5: 630c35a44e4840dc41ce9d70c0d6c434
+      size: 573
+    - path: artifacts/reports/xai_feature_interpretation.csv
+      hash: md5
+      md5: 7a71e70ba783c57bd5a567a1c42fa624
+      size: 3043
+    - path: artifacts/reports/xai_feature_interpretation.json
+      hash: md5
+      md5: dd633121c992b4558a5c1ea1f61979e8
+      size: 7297
+    - path: artifacts/reports/xai_feature_interpretation.md
+      hash: md5
+      md5: 699fa627bc06938729988115056693d2
+      size: 1423
