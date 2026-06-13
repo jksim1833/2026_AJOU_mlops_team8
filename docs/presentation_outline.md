@@ -11,20 +11,22 @@
 ## Slide 3. Data
 
 - KAMP 주조 품질보증 AI 데이터셋
-- Product 1, 4,207 rows
-- 정상 3,468 / 불량 739
+- Product 1, 원천 4,207 rows
+- exact dedup 후 2,515 rows, 정상 1,960 / 불량 555
 - 결함 컬럼으로 binary label 생성 후 feature에서 제거
 
 ## Slide 4. Pipeline
 
-Raw Data -> Binary Label -> DVC -> RF Baseline -> MLflow -> XAI -> FastAPI -> Streamlit/Docker
+Raw Data -> Binary Label/Exact Dedup -> DVC -> AutoML-lite Leaderboard -> Logistic Tuning -> MLflow Champion -> XAI -> FastAPI -> Streamlit/Docker
 
 ## Slide 5. Baseline Result
 
 - Validation F1: 0.534
-- Validation ROC-AUC: 0.828
-- Test F1: 0.527
-- Test ROC-AUC: 0.839
+- Validation ROC-AUC: 0.748
+- Validation recall: 0.843
+- Test F1: 0.488
+- Test ROC-AUC: 0.758
+- Decision threshold: 0.49
 
 ## Slide 6. MLflow Tracking
 
@@ -34,7 +36,8 @@ Raw Data -> Binary Label -> DVC -> RF Baseline -> MLflow -> XAI -> FastAPI -> St
 
 ## Slide 7. XAI
 
-- Top features: Factory_Humidity, Factory_Temp, Cycle_Time, Spray_Time, Coolant_Pressure
+- Logistic coefficient와 permutation importance
+- Top permutation features: Factory_Humidity, Spray_1_Time, Spray_Time, Coolant_Temp
 - 정상/불량 샘플별 입력값과 feature importance 비교
 
 ## Slide 8. API Demo
@@ -53,6 +56,6 @@ Raw Data -> Binary Label -> DVC -> RF Baseline -> MLflow -> XAI -> FastAPI -> St
 
 - class imbalance
 - feature drift
-- threshold tuning
+- AutoGluon/H2O 보조 leaderboard
 - retraining pipeline
 - model monitoring

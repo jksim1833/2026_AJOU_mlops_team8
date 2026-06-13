@@ -20,16 +20,19 @@ Baseline comparison은 다음 모델 후보를 같은 train/validation/test spli
 - XGBoost
 - LightGBM
 
-평가 metric은 accuracy, precision, recall, F1, ROC-AUC를 함께 사용한다.
+평가 metric은 accuracy, precision, recall, F1, ROC-AUC와 fit/predict 시간을 함께 사용한다.
 정상 class가 더 많은 class imbalance 문제이므로, 모델 선정은 validation F1을
 우선 기준으로 하고 validation ROC-AUC를 tie-breaker로 사용한다.
 
-현재 repository에 포함된 RandomForest serving artifact의 성능은 다음과 같다.
+exact dedup split에서 AutoML-lite leaderboard 1위는 Logistic Regression이다.
 
 | Split | Accuracy | Precision | Recall | F1 | ROC-AUC |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Validation | 0.781 | 0.427 | 0.712 | 0.534 | 0.828 |
-| Test | 0.796 | 0.444 | 0.649 | 0.527 | 0.839 |
+| Validation | 0.672 | 0.384 | 0.819 | 0.523 | 0.743 |
+| Test | 0.659 | 0.366 | 0.759 | 0.494 | 0.758 |
+
+후속 MLOps 단계에서는 이 후보를 5-fold CV와 threshold tuning으로 최적화하고
+MLflow champion 및 serving artifact로 연결한다.
 
 ## 3. SHAP/XAI 구현 내용
 

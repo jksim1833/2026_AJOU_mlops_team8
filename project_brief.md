@@ -30,7 +30,7 @@
 | :--- | :--- |
 | 정상/불량 binary classification | 주요 불량/치명 불량 3-class 분류 |
 | Product 1 데이터만 사용 | Product 2까지 포함한 통합 모델 |
-| RandomForest baseline | 복잡한 딥러닝 모델 |
+| AutoML-lite 후보 비교와 Logistic champion | 복잡한 딥러닝 모델 |
 | MLflow local tracking | 운영용 MLflow server/registry 고도화 |
 | FastAPI `/predict` | 실시간 공장 설비 연동 |
 | Streamlit 간단 UI | 대시보드형 웹앱 고도화 |
@@ -47,7 +47,7 @@ week15 master notebook의 “오늘 끝나기 전 팀별 제출 체크” 항목
 | :--- | :--- | :--- |
 | 한 문장 문제정의 | 공정 엔지니어를 위해 KAMP 공정·센서 데이터로 정상/불량을 예측하고 XAI 근거를 제공한다 | 확정 |
 | 데이터/label/split 전략 | Product 1 raw data에서 결함 컬럼으로 `defect_label` 생성, 결함 컬럼 제거, stratified 70/15/15 split | 1차 구현 완료 |
-| baseline 모델과 metric | RandomForestClassifier, primary metric은 F1, 보조 metric은 ROC-AUC/recall/precision/accuracy/confusion matrix | 1차 실행 완료 |
+| baseline 모델과 metric | 5개 후보 AutoML-lite leaderboard, primary metric은 F1, 보조 metric은 ROC-AUC/recall/precision/실행 시간 | 완료 |
 | MLOps 구조 | Git/GitHub repo 구조, DVC pipeline, MLflow tracking, FastAPI API, Streamlit UI, Dockerfile | 구조 구현 완료 |
 | 최종 발표 demo path | sample input -> FastAPI `/predict` -> normal/defect probability -> top features -> Streamlit 화면 -> Dockerfile 설명 | 1차 구현 완료 |
 
@@ -61,7 +61,7 @@ week15 master notebook의 “오늘 끝나기 전 팀별 제출 체크” 항목
 | 사용 범위 | Product 1 |
 | raw path | `data/raw/DieCasting_Quality_Raw_Data_product1.csv` |
 | processed path | `data/processed/diecasting_product1_binary.csv` |
-| 전체 row 수 | 4,207 |
+| 전체 row 수 | 원천 4,207 / exact dedup 후 2,515 |
 | feature 수 | target 포함 29 columns, 학습 feature는 target 제외 28개 |
 
 ### Binary label 생성 규칙
@@ -86,8 +86,8 @@ label 생성에 사용한 결함 컬럼은 feature에서 반드시 제거한다.
 
 | Class | 의미 | Count |
 | :--- | :--- | ---: |
-| 0 | 정상 | 3,468 |
-| 1 | 불량 | 739 |
+| 0 | 정상 | 1,960 |
+| 1 | 불량 | 555 |
 
 정상 데이터가 훨씬 많으므로 accuracy만 보면 안 된다. 불량 탐지 성능을 확인하기 위해 F1, recall, ROC-AUC를 함께 본다.
 
@@ -97,20 +97,20 @@ label 생성에 사용한 결함 컬럼은 feature에서 반드시 제거한다.
 
 | Split | 정상 | 불량 |
 | :--- | ---: | ---: |
-| Train | 2,427 | 517 |
-| Validation | 520 | 111 |
-| Test | 521 | 111 |
+| Train | 1,370 | 389 |
+| Validation | 295 | 83 |
+| Test | 295 | 83 |
 
 기본 비율은 `train/validation/test = 70/15/15`이다.  
-향후 shot 시간, batch, lot 정보가 명확히 확인되면 group/time-aware split으로 개선할 수 있다.
+완전히 동일한 processed row 1,692개를 split 전에 제거했으며 split 간 exact row overlap은 모두 0건이다. 향후 shot 시간, batch, lot 정보가 명확히 확인되면 group/time-aware split으로 개선할 수 있다.
 
 ## 5. Baseline 모델과 현재 Metric
 
-### 현재 baseline
+### 현재 serving champion
 
 | 항목 | 내용 |
 | :--- | :--- |
-| Baseline model | `RandomForestClassifier` |
+| Champion model | `StandardScaler + LogisticRegression` |
 | Target | `defect_label` binary classification |
 | Primary metric | F1-score |
 | Secondary metrics | ROC-AUC, recall, precision, accuracy, confusion matrix |
@@ -118,18 +118,18 @@ label 생성에 사용한 결함 컬럼은 feature에서 반드시 제거한다.
 | Metadata | `artifacts/models/metadata.json` |
 | Metrics | `artifacts/reports/metrics.json` |
 
-### 현재 baseline 결과
+### 현재 champion 결과
 
 | Split | Accuracy | Precision | Recall | F1 | ROC-AUC |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| Validation | 0.781 | 0.427 | 0.712 | 0.534 | 0.828 |
-| Test | 0.796 | 0.444 | 0.649 | 0.527 | 0.839 |
+| Validation | 0.677 | 0.391 | 0.843 | 0.534 | 0.748 |
+| Test | 0.651 | 0.360 | 0.759 | 0.488 | 0.758 |
 
 ### 결과 해석
 
-- ROC-AUC는 0.83 수준으로, 공정/센서 변수에 정상/불량을 구분할 신호가 어느 정도 있다.
-- F1은 0.53 수준으로 높지 않다. 정상 데이터가 많고 불량 데이터가 적은 class imbalance 영향이 있다.
-- 불량 recall은 validation 0.712, test 0.649이다. 불량을 놓치는 것이 위험하므로 향후 threshold tuning 또는 class weight 조정이 필요하다.
+- exact dedup 후 성능은 기존 중복 포함 평가보다 낮아졌지만 데이터 누수 가능성을 제거한 신뢰 가능한 결과다.
+- Logistic baseline validation F1 0.523에서 CV와 threshold tuning 후 0.534로 개선되었다.
+- 최종 threshold는 0.49이며 불량 recall은 validation 0.843, test 0.759이다.
 - Precision은 낮은 편이다. 즉, 불량이라고 예측했지만 실제 정상인 경우가 존재한다. 공정 운영에서는 false alarm 비용과 defect miss 비용 중 어느 쪽을 더 중요하게 볼지 논의가 필요하다.
 
 ### 역할 경계: baseline 비교와 tuning을 분리한다
@@ -244,12 +244,14 @@ diecasting-mlops/
 
 ### DVC 목표
 
-`dvc.yaml`에는 두 stage가 정의되어 있다.
+`dvc.yaml`에는 네 stage가 정의되어 있다.
 
 | Stage | Command | 역할 |
 | :--- | :--- | :--- |
 | `prepare_data` | `python -m src.data.prepare_data` | raw data에서 binary dataset과 split 생성 |
-| `train_binary` | `python -m src.models.train_binary` | model, metrics, plots, request sample 생성 |
+| `train_binary` | `python -m src.models.train_binary` | RF baseline artifact 생성 |
+| `compare_baselines_xai` | `python -m src.models.compare_baselines_xai` | AutoML-lite leaderboard와 SHAP 생성 |
+| `tune_logistic` | `python -m src.models.tune_logistic` | Logistic tuning, MLflow champion, serving artifact 생성 |
 
 교수님께 설명할 포인트:
 
@@ -260,13 +262,13 @@ diecasting-mlops/
 ### MLflow 목표
 
 현재 `sqlite:///mlflow.db`를 local tracking store로 사용한다.  
-현재는 1차 `rf_binary_baseline` run이 기록되어 있다. 최종 제출 전에는 Zhang Xin이 만든 baseline 비교 결과를 바탕으로 심재광이 tuning run을 추가하고, 최종 serving 후보에 `candidate_for_serving` 또는 `champion` tag를 붙인다.
+baseline 비교 run과 `logistic_tuned_champion` run이 기록되어 있다. serving artifact metadata의 run ID와 MLflow champion run ID가 일치하며 이전 champion은 superseded 처리한다.
 
 | 기록 항목 | 내용 |
 | :--- | :--- |
 | Experiment | `diecasting_binary_defect_classification` |
-| 현재 Run | `rf_binary_baseline` |
-| 추가 예정 Run | `decision_tree_baseline`, `xgboost_baseline`, `lightgbm_baseline`, `tuned_*` 등 |
+| Baseline Runs | `logistic_regression_baseline`, `decision_tree_baseline`, `random_forest_baseline`, `xgboost_baseline`, `lightgbm_baseline` |
+| Champion Run | `logistic_tuned_champion` |
 | Params | model type, hyperparameters, data version, target column |
 | Metrics | validation/test accuracy, precision, recall, F1, ROC-AUC |
 | Artifacts | model, metadata, metrics, confusion matrix, ROC curve, feature importance |
@@ -367,7 +369,7 @@ docker run -p 8000:8000 diecasting-api
 | 데이터는 어디서 왔는가? | KAMP 주조 품질보증 AI 데이터셋, Product 1 사용 |
 | target은 어떻게 만들었는가? | 결함 컬럼 중 하나라도 1이면 defect, 모두 0이면 normal |
 | 어떤 컬럼을 feature에서 제거했는가? | label 생성에 사용한 Cavity 1/2 결함 컬럼 전체 |
-| class imbalance가 있는가? | 정상 3,468 / 불량 739 |
+| class imbalance가 있는가? | dedup 후 정상 1,960 / 불량 555 |
 | split은 어떻게 했는가? | stratified 70/15/15, train/valid/test class 분포 제시 |
 | DVC로 무엇을 관리할 것인가? | raw, processed, split dataset, `dvc.yaml` pipeline |
 
@@ -395,11 +397,11 @@ Zhang Xin 담당자는 **최적화 전 baseline 모델 비교와 XAI 초안**을
 
 | 항목 | 현재 상태 |
 | :--- | :--- |
-| baseline model | RandomForestClassifier |
-| validation F1 | 0.534 |
-| validation ROC-AUC | 0.828 |
-| test F1 | 0.527 |
-| test ROC-AUC | 0.839 |
+| baseline leader | LogisticRegression |
+| validation F1 | 0.523 |
+| validation ROC-AUC | 0.743 |
+| test F1 | 0.494 |
+| test ROC-AUC | 0.758 |
 | model artifact | `artifacts/models/model.joblib` |
 | metrics artifact | `artifacts/reports/metrics.json` |
 
@@ -602,7 +604,7 @@ docker run -p 8000:8000 diecasting-api
 | 리스크 | 설명 | 현재 대응 | 추가 보완 |
 | :--- | :--- | :--- | :--- |
 | Label leakage | 결함 컬럼이 feature에 남으면 정답 유출 | 결함 컬럼 제거 | Data 담당자가 컬럼 목록 재확인 |
-| Class imbalance | 정상 3,468 / 불량 739로 불균형 | F1, recall, ROC-AUC 사용 | threshold tuning |
+| Class imbalance | dedup 후 정상 1,960 / 불량 555로 불균형 | class weight, F1, recall, ROC-AUC, threshold 0.49 | 운영 비용 기반 threshold 재검토 |
 | False negative | 불량을 정상으로 예측하는 경우 | recall 확인 | defect recall 중심 threshold 선택 |
 | False positive | 정상을 불량으로 예측하는 경우 | precision 확인 | 운영 비용 관점 논의 |
 | Drift | 공정 조건 분포가 변하면 성능 저하 | Future Work로 PSI/KS 제안 | drift simulation 가능 시 추가 |
@@ -617,9 +619,9 @@ docker run -p 8000:8000 diecasting-api
 | 발표자료 PDF | 심재광 | outline 있음 | slide 제작 |
 | GitHub Repository | 심재광 | local repo 구조 있음 | public repo 생성/push |
 | 데이터/EDA 자료 | 김병근 | data profile 있음 | EDA plot 보강 |
-| Baseline 모델 비교 | Zhang Xin | RF baseline 있음 | Decision Tree/RF/XGBoost/LightGBM 비교, XAI 초안 |
-| Tuning/모델 최적화 | 심재광 | RF baseline 있음 | Zhang 결과 기반 threshold/hyperparameter tuning |
-| MLflow evidence | 심재광 | `mlflow.db` 있음 | baseline/tuning run 비교, UI screenshot |
+| Baseline 모델 비교 | Zhang Xin | 5개 후보 leaderboard/XAI 완료 | 보고서 반영 |
+| Tuning/모델 최적화 | 심재광 | Logistic CV/threshold tuning 완료 | 발표 근거 반영 |
+| MLflow evidence | 심재광 | champion run과 screenshot 완료 | 발표자료 삽입 |
 | FastAPI demo | 심재광 | 구현/검증 완료 | 발표 리허설 |
 | Web UI demo | 심재광 | 구현/검증 완료 | 발표 리허설 |
 | Docker evidence | 심재광 | Dockerfile 있음 | Docker 환경에서 build/run 확인 |

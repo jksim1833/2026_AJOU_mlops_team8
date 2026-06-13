@@ -12,7 +12,7 @@
 | :--- | :--- | :--- |
 | Data | 김병근 | 데이터 출처, EDA, binary label, split, DVC 전략 |
 | Modeling | Zhang Xin | RF baseline, 후보 모델 비교, tuning 후보 선정, XAI 초안 |
-| MLOps/Serving | 심재광 | GitHub 구조, MLflow, FastAPI, Docker |
+| MLOps/Serving | 심재광 | Logistic tuning, MLflow champion, FastAPI, Docker |
 | 발표/문서화 | 심재광 | 보고서, 발표자료, demo script |
 
 ## Project Structure
@@ -90,7 +90,7 @@ The dataset is KAMP `DATASET_SEQ=55`, "주조 품질보증 AI 데이터셋":
 
 ## 1. Prepare Data
 
-Raw data는 `data/raw/DieCasting_Quality_Raw_Data_product1.csv`에 둡니다. 결함 컬럼 중 하나라도 1이면 `defect_label=1`, 모두 0이면 `defect_label=0`으로 생성합니다. 결함 컬럼은 feature에서 제거합니다.
+Raw data는 `data/raw/DieCasting_Quality_Raw_Data_product1.csv`에 둡니다. 결함 컬럼 중 하나라도 1이면 `defect_label=1`, 모두 0이면 `defect_label=0`으로 생성합니다. 결함 컬럼을 feature에서 제거하고, 완전히 동일한 processed row를 제거한 뒤 stratified 70/15/15 split을 생성합니다.
 
 ```bash
 python -m src.data.prepare_data
@@ -134,6 +134,29 @@ Main outputs:
 - `artifacts/plots/shap_beeswarm.png`
 - `artifacts/plots/shap_waterfall_defect_sample.png`
 - `artifacts/models/baseline_candidate.joblib`
+
+week11 실습의 AutoML-lite 방식처럼 모든 후보에 동일한 split과 metric을 적용하고,
+validation F1/ROC-AUC 순위와 fit/predict 시간을 leaderboard에 기록합니다.
+
+## 2-2. Tune Logistic Regression Champion
+
+```bash
+python -m src.models.tune_logistic
+```
+
+5-fold stratified CV로 30개 유효 parameter 조합을 탐색하고, validation에서
+F1 → recall → precision 순서로 decision threshold를 선택합니다.
+
+최종 serving 산출물:
+
+- `artifacts/models/model.joblib`
+- `artifacts/models/metadata.json`
+- `artifacts/reports/logistic_tuning_results.csv`
+- `artifacts/reports/logistic_threshold_results.csv`
+- `artifacts/reports/logistic_tuning_report.md`
+- `artifacts/reports/logistic_coefficients.json`
+- `artifacts/reports/logistic_permutation_importance.json`
+- `artifacts/plots/logistic_threshold_tuning.png`
 
 MLflow UI:
 
@@ -206,7 +229,7 @@ curl http://localhost:8000/health
 | :--- | :--- |
 | Git/GitHub | 코드, config, README, Dockerfile 버전관리 |
 | Data Version Control | raw/processed/split 데이터 버전 전략 문서화, DVC 적용 가능 구조 |
-| MLflow | params, metrics, artifacts, champion tag 기록 |
+| MLflow | AutoML-lite baseline runs, tuning params/metrics/artifacts, champion tag 기록 |
 | XAI/Error Analysis | feature importance와 top feature 기반 설명 |
 | Serving | FastAPI `/health`, `/model-info`, `/predict` |
 | Web UI | Streamlit sample prediction demo |
@@ -214,7 +237,12 @@ curl http://localhost:8000/health
 
 ## DVC Pipeline
 
-`dvc.yaml`에는 `prepare_data`, `train_binary` 두 stage가 정의되어 있습니다.
+`dvc.yaml`에는 다음 네 stage가 정의되어 있습니다.
+
+- `prepare_data`: label 생성, exact dedup, split
+- `train_binary`: RF baseline
+- `compare_baselines_xai`: AutoML-lite leaderboard와 SHAP
+- `tune_logistic`: Logistic tuning, MLflow champion, serving artifact
 
 ```bash
 dvc init

@@ -23,7 +23,8 @@
 
 ## 4. Baseline 및 모델 실험
 
-- RandomForest baseline
+- AutoML-lite baseline leaderboard와 실행 시간
+- Logistic Regression hyperparameter/threshold tuning
 - 주요 metric: F1, ROC-AUC, recall, precision, accuracy
 - MLflow run 비교와 champion 선정 근거
 
@@ -42,4 +43,4 @@
 ## 7. 결론 및 Future Work
 
 - 이번 프로젝트에서 구현한 end-to-end MLOps 흐름
-- drift monitoring, retraining, advanced AutoML 확장 계획
+- drift monitoring, retraining, AutoGluon/H2O 보조 검증 확장 계획

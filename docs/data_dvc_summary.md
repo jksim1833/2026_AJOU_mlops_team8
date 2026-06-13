@@ -25,7 +25,9 @@ data/raw/DieCasting_Quality_Raw_Data_product1.csv
 데이터 구조는 다음과 같다.
 
 ```text
-전체 row 수: 4207
+원천 row 수: 4207
+exact dedup 후 row 수: 2515
+제거된 완전 동일 row 수: 1692
 전체 column 수: 29
 target column: defect_label
 ```
@@ -50,8 +52,8 @@ defect_label 생성에 사용된 결함 컬럼은 feature에서 제거한다.
 project_brief 기준 전체 데이터의 class 분포는 다음과 같다.
 
 ```text
-normal(0): 3468
-defect(1): 739
+normal(0): 1960
+defect(1): 555
 ```
 
 정상 데이터가 불량 데이터보다 많은 class imbalance 구조이다.
@@ -64,25 +66,25 @@ defect(1): 739
 
 ```text
 train:
-  normal(0): 2427
-  defect(1): 517
+  normal(0): 1370
+  defect(1): 389
 
 valid:
-  normal(0): 520
-  defect(1): 111
+  normal(0): 295
+  defect(1): 83
 
 test:
-  normal(0): 521
-  defect(1): 111
+  normal(0): 295
+  defect(1): 83
 ```
 
-valid/test는 모델 평가용 데이터이므로 원본 class 비율을 유지한다.
+valid/test는 모델 평가용 데이터이므로 원본 class 비율을 유지한다. 세 split 사이의 완전히 동일한 row overlap은 모두 0건이다.
 
 ## 6. Oversampling 적용 여부
 
 현재 project_brief 기준 pipeline에서는 oversampling을 적용하지 않는다.
 
-class imbalance는 baseline RandomForest의 class_weight 설정과 평가 metric을 통해 관리한다.
+class imbalance는 class weight, F1/recall/ROC-AUC, validation threshold tuning으로 관리한다.
 
 추후 oversampling 실험이 필요하면 train 데이터에만 선택적으로 적용해야 한다.
 
