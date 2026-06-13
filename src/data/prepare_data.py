@@ -68,6 +68,11 @@ def build_binary_dataset(df: pd.DataFrame, target_column: str) -> tuple[pd.DataF
     return numeric_feature_df, defect_columns
 
 
+def remove_exact_duplicates(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
+    deduplicated = df.drop_duplicates(keep="first").reset_index(drop=True)
+    return deduplicated, int(len(df) - len(deduplicated))
+
+
 def split_dataset(df: pd.DataFrame, target_column: str, cfg: dict[str, Any]) -> dict[str, pd.DataFrame]:
     random_state = int(cfg["data"]["random_state"])
     test_size = float(cfg["data"]["test_size"])
@@ -89,6 +94,18 @@ def split_dataset(df: pd.DataFrame, target_column: str, cfg: dict[str, Any]) -> 
     return {"train": train, "valid": valid, "test": test}
 
 
+def split_overlap_counts(splits: dict[str, pd.DataFrame]) -> dict[str, int]:
+    row_hashes = {
+        name: set(pd.util.hash_pandas_object(split, index=False).astype(str))
+        for name, split in splits.items()
+    }
+    return {
+        "train_valid": len(row_hashes["train"] & row_hashes["valid"]),
+        "train_test": len(row_hashes["train"] & row_hashes["test"]),
+        "valid_test": len(row_hashes["valid"] & row_hashes["test"]),
+    }
+
+
 def write_split_files(splits: dict[str, pd.DataFrame], processed_dir: Path) -> None:
     for name, split_df in splits.items():
         split_df.to_csv(processed_dir / f"{name}.csv", index=False)
@@ -103,15 +120,23 @@ def main() -> None:
     processed_dir.mkdir(parents=True, exist_ok=True)
 
     raw_df = pd.read_csv(raw_path)
-    processed_df, defect_columns = build_binary_dataset(raw_df, target_column)
+    processed_with_duplicates, defect_columns = build_binary_dataset(raw_df, target_column)
+    processed_df, duplicates_removed = remove_exact_duplicates(processed_with_duplicates)
     processed_df.to_csv(processed_path, index=False)
     splits = split_dataset(processed_df, target_column, cfg)
+    overlap_counts = split_overlap_counts(splits)
+    if any(overlap_counts.values()):
+        raise RuntimeError(f"Exact row overlap detected between splits: {overlap_counts}")
     write_split_files(splits, processed_dir)
 
     report = {
         "source": str(raw_path.relative_to(ROOT)),
         "processed": str(processed_path.relative_to(ROOT)),
+        "data_version": cfg["project"]["data_version"],
+        "source_rows": int(processed_with_duplicates.shape[0]),
         "rows": int(processed_df.shape[0]),
+        "duplicates_removed": duplicates_removed,
+        "deduplication_rule": "drop fully identical processed rows before splitting",
         "columns": int(processed_df.shape[1]),
         "target_column": target_column,
         "class_counts": processed_df[target_column].value_counts().sort_index().to_dict(),
@@ -120,6 +145,8 @@ def main() -> None:
             name: split[target_column].value_counts().sort_index().to_dict()
             for name, split in splits.items()
         },
+        "split_row_counts": {name: int(len(split)) for name, split in splits.items()},
+        "exact_row_overlap": overlap_counts,
     }
     report_path = ROOT / "artifacts" / "reports" / "data_profile.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
