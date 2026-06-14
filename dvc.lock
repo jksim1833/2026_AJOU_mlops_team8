@@ -129,8 +129,8 @@ stages:
       size: 47040
     - path: src/models/compare_baselines_xai.py
       hash: md5
-      md5: 2959279cc9546753b5b8bee639bdc998
-      size: 33829
+      md5: bbd9968bd042583c3d69b5d25a5bdc3f
+      size: 32993
     outs:
     - path: artifacts/models/baseline_candidate.joblib
       hash: md5
