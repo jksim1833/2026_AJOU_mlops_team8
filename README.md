@@ -238,7 +238,7 @@ curl http://localhost:8000/health
 | 영역 | 적용 방식 |
 | :--- | :--- |
 | Git/GitHub | 코드, config, README, Dockerfile 버전관리 |
-| Data Version Control | raw/processed/split 데이터 버전 전략 문서화, DVC 적용 가능 구조 |
+| Data Version Control | 4-stage pipeline과 local-folder remote로 데이터/모델 artifact 관리 |
 | MLflow | AutoML-lite baseline runs, tuning params/metrics/artifacts, champion tag 기록 |
 | XAI/Error Analysis | feature importance와 top feature 기반 설명 |
 | Serving | FastAPI `/health`, `/model-info`, `/predict` |
@@ -255,9 +255,26 @@ curl http://localhost:8000/health
 - `tune_logistic`: Logistic tuning, MLflow champion, serving artifact
 
 ```bash
-dvc init
 dvc repro
+dvc push
+dvc pull
 ```
+
+week03 강의의 local-folder remote 방식을 따라 기본 remote
+`localstorage`를 설정했습니다. 저장소를
+`project/diecasting-mlops`에 두는 경우 remote 폴더는 sibling 경로인
+`project/diecasting_dvc_remote_storage`에 있어야 합니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m dvc remote list
+.\.venv\Scripts\python.exe -m dvc pull
+.\.venv\Scripts\python.exe -m dvc status
+```
+
+이 구성은 강의 수준의 로컬 재현성 검증을 위한 것입니다. remote 폴더는
+GitHub에 업로드되지 않으므로 다른 PC에서 Git clone만 수행해서는 데이터를
+복원할 수 없습니다. 공유 클라우드 remote는 프로젝트 시간과 범위상
+제외했습니다.
 
 자세한 데이터 버전 전략은 `docs/data_versioning.md`를 참고합니다.
 

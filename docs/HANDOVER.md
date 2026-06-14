@@ -71,6 +71,9 @@ git status
 - `python -m src.data.prepare_data`: 성공
 - `dvc repro`: 성공
 - `dvc status`: `Data and pipelines are up to date`
+- DVC default remote: `localstorage`
+- `dvc push`: 49개 객체 업로드 성공
+- `dvc status -c`: cache와 remote 동기화 확인
 - processed CSV SHA-256은 EDA 추가 전후 동일하다.
 - Streamlit `Data EDA` 탭 렌더링과 브라우저 console error 없음이 확인됐다.
 - evidence:
@@ -129,12 +132,12 @@ powershell -ExecutionPolicy Bypass -File scripts\stop_local.ps1
   검증하지 못했다.
 - `.gitignore`가 `data/raw`, `data/processed`, `artifacts`와 `mlflow.db`를
   제외한다.
-- 현재 DVC remote도 설정되어 있지 않다. 따라서 새 PC에서 Git clone만
-  하면 raw data, processed data, champion model artifact가 복원되지 않는다.
-- 새 환경 재현을 제출 요건으로 삼는다면 다음 중 하나를 먼저 결정해야 한다.
-  - DVC remote를 설정하고 `dvc push` 수행
-  - release asset 또는 별도 storage로 serving artifact 제공
-  - 허용 범위를 확인한 뒤 필요한 champion artifact만 Git LFS 등으로 관리
+- week03 강의 방식에 따라 sibling 폴더
+  `project/diecasting_dvc_remote_storage`를 DVC default remote
+  `localstorage`로 설정했다.
+- local remote는 GitHub에 포함되지 않는다. 다른 PC에서 Git clone만 하면
+  복원되지 않으며, remote 폴더를 별도로 전달하거나 클라우드 remote로
+  전환해야 한다. 공유 클라우드 remote는 프로젝트 범위에서 제외했다.
 - Docker image는 build context의 `artifacts/models/model.joblib`,
   `artifacts/models/metadata.json`,
   `artifacts/reports/feature_importance.json`을 필요로 한다. 이 파일들이
@@ -144,7 +147,6 @@ powershell -ExecutionPolicy Bypass -File scripts\stop_local.ps1
 
 ## 다음 thread 권장 첫 작업
 
-Docker를 제외하고 코드 구현은 완료된 상태다. 다음 thread에서는
-`project_brief.md`와 이 문서를 읽고, 먼저 제출물 재현성 전략(DVC remote
-또는 artifact 배포 방식)을 정한 뒤 Docker 검증, 보고서, 발표자료 순서로
-진행한다.
+코드 구현과 강의 수준의 local DVC remote 적용은 완료된 상태다. 다음
+thread에서는 `project_brief.md`와 이 문서를 읽고 Docker 검증, 보고서,
+발표자료 순서로 진행한다.
