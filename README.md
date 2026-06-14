@@ -219,19 +219,73 @@ streamlit run src/ui/app.py
 
 ## 5. Docker Demo
 
-학습 산출물(`artifacts/models`, `artifacts/reports`)이 생성된 뒤 Docker image를 빌드합니다.
-Dockerfile은 serving demo를 빠르게 만들기 위해 `requirements-api.txt`만 설치합니다.
+Docker는 FastAPI 코드, Python 의존성, champion model artifact를 하나의
+실행 환경으로 묶습니다.
 
-```bash
-docker build -t diecasting-api .
-docker run -p 8000:8000 diecasting-api
+- **Image**: Dockerfile로 만든 실행 템플릿
+- **Container**: image를 실제로 실행한 격리 프로세스
+- **Port mapping**: `-p 8000:8000`으로 Windows의 8000번 포트를
+  container의 8000번 포트에 연결
+
+이 프로젝트의 Docker 범위는 production cloud 배포가 아니라, week15
+워크숍에서 요구한 실행 환경 재현성과 안정적인 FastAPI demo입니다.
+학습은 container 안에서 다시 수행하지 않으며, DVC로 복원한 champion
+artifact를 image에 포함해 serving만 수행합니다.
+
+먼저 Docker build에 필요한 artifact를 확인합니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m dvc pull
 ```
 
-컨테이너 실행 후 확인:
+Image 빌드:
 
-```bash
-curl http://localhost:8000/health
+```powershell
+docker build -t diecasting-api:logistic-champion-v1 .
 ```
+
+Container 실행:
+
+```powershell
+docker run --rm -d -p 8000:8000 `
+  --name diecasting-api `
+  diecasting-api:logistic-champion-v1
+```
+
+- `--rm`: container 종료 후 임시 container 자동 삭제
+- `-d`: background 실행
+- `--name`: 관리에 사용할 container 이름
+
+상태와 로그 확인:
+
+```powershell
+docker ps
+docker logs diecasting-api
+curl.exe http://localhost:8000/health
+curl.exe http://localhost:8000/model-info
+curl.exe -X POST http://localhost:8000/predict `
+  -H "Content-Type: application/json" `
+  --data-binary "@artifacts/reports/normal_request.json"
+curl.exe -X POST http://localhost:8000/predict `
+  -H "Content-Type: application/json" `
+  --data-binary "@artifacts/reports/defect_request.json"
+```
+
+Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+종료:
+
+```powershell
+docker stop diecasting-api
+```
+
+검증된 image tag는 `diecasting-api:logistic-champion-v1`이며, Python 3.10과
+학습 환경의 핵심 package version을 고정했습니다. 실제 검증 결과는
+`docs/evidence/docker_verification.md`를 참고합니다.
 
 ## MLOps Components
 

@@ -2,4 +2,8 @@
 *.yaml text eol=lf
 *.yml text eol=lf
 *.dvc text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+.dockerignore text eol=lf
 .dvc/config text eol=lf
+Dockerfile text eol=lf

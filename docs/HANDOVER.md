@@ -74,12 +74,17 @@ git status
 - DVC default remote: `localstorage`
 - `dvc push`: 49개 객체 업로드 성공
 - `dvc status -c`: cache와 remote 동기화 확인
+- Docker image `diecasting-api:logistic-champion-v1`: build 성공
+- Docker container: `healthy`
+- Docker API: `/health`, `/model-info`, 정상/불량 `/predict` 모두 성공
 - processed CSV SHA-256은 EDA 추가 전후 동일하다.
 - Streamlit `Data EDA` 탭 렌더링과 브라우저 console error 없음이 확인됐다.
 - evidence:
   - `docs/evidence/mlflow_champion.png`
   - `docs/evidence/fastapi_swagger.png`
   - `docs/evidence/streamlit_champion_metrics.png`
+  - `docs/evidence/docker_fastapi_swagger.png`
+  - `docs/evidence/docker_verification.md`
 
 ## 로컬 실행
 
@@ -107,29 +112,16 @@ powershell -ExecutionPolicy Bypass -File scripts\stop_local.ps1
 
 ## 남은 작업
 
-1. Docker Desktop이 있는 환경에서 다음을 검증하고 `/health`, `/model-info`,
-   정상/불량 `/predict` 증거를 저장한다.
-
-   ```powershell
-   docker build -t diecasting-api .
-   docker run --rm -p 8000:8000 --name diecasting-api diecasting-api
-   curl.exe http://localhost:8000/health
-   curl.exe http://localhost:8000/model-info
-   curl.exe -X POST http://localhost:8000/predict `
-     -H "Content-Type: application/json" `
-     --data-binary "@artifacts/reports/normal_request.json"
-   ```
-
-2. 최종 보고서 PDF와 발표자료 PDF를 작성한다.
-3. EDA, leaderboard, tuning 전후 성능, MLflow champion, Swagger, Streamlit
+1. 최종 보고서 PDF와 발표자료 PDF를 작성한다.
+2. EDA, leaderboard, tuning 전후 성능, MLflow champion, Swagger, Streamlit
    이미지를 발표자료에 배치한다.
-4. 발표 직전에 normal/defect 고정 sample과 API/UI 흐름을 다시 리허설한다.
-5. 선택 사항으로 데모 영상을 녹화한다.
+3. 발표 직전에 normal/defect 고정 sample과 API/UI 흐름을 다시 리허설한다.
+4. 선택 사항으로 데모 영상을 녹화한다.
 
 ## 중요 주의사항
 
-- 현재 PC에는 Docker CLI가 설치되어 있지 않아 실제 Docker build/run은
-  검증하지 못했다.
+- Docker build/run은 현재 PC의 Docker Desktop Linux container 환경에서
+  검증했다. cloud registry push와 원격 서버 배포는 프로젝트 범위 밖이다.
 - `.gitignore`가 `data/raw`, `data/processed`, `artifacts`와 `mlflow.db`를
   제외한다.
 - week03 강의 방식에 따라 sibling 폴더
@@ -147,6 +139,6 @@ powershell -ExecutionPolicy Bypass -File scripts\stop_local.ps1
 
 ## 다음 thread 권장 첫 작업
 
-코드 구현과 강의 수준의 local DVC remote 적용은 완료된 상태다. 다음
-thread에서는 `project_brief.md`와 이 문서를 읽고 Docker 검증, 보고서,
-발표자료 순서로 진행한다.
+코드 구현, local DVC remote, Docker serving 검증은 완료된 상태다. 다음
+thread에서는 `project_brief.md`와 이 문서를 읽고 보고서, 발표자료,
+발표 리허설 순서로 진행한다.

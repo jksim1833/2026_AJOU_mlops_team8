@@ -316,15 +316,20 @@ UI의 역할:
 
 Docker는 production 배포가 아니라 **수업 제출용 MLOps 실행 구조 증거**로 사용한다.
 
-현재 Dockerfile은 FastAPI serving app을 실행하는 구조다.
+현재 Dockerfile은 FastAPI serving app과 champion artifact만 포함하는
+구조다. Python 3.10과 학습 환경의 핵심 dependency version을 고정했으며,
+container health check도 포함한다.
 
-```bash
-docker build -t diecasting-api .
-docker run -p 8000:8000 diecasting-api
+```powershell
+docker build -t diecasting-api:logistic-champion-v1 .
+docker run --rm -d -p 8000:8000 `
+  --name diecasting-api `
+  diecasting-api:logistic-champion-v1
 ```
 
-주의: 현재 작업 PC에는 Docker CLI가 설치되어 있지 않아 실제 build 검증은 아직 못 했다.  
-하지만 Dockerfile, `requirements-api.txt`, 실행 명령은 준비되어 있으므로 Docker Desktop이 설치된 환경에서 검증하면 된다.
+2026-06-14 Docker Desktop 환경에서 build/run을 검증했다. `/health`,
+`/model-info`, 정상/불량 `/predict`가 모두 HTTP 200으로 동작했고,
+container health status는 `healthy`였다.
 
 ## 7. 팀원별 역할과 인수인계
 
@@ -463,7 +468,7 @@ Zhang Xin 담당자는 **최적화 전 baseline 모델 비교와 XAI 초안**을
 | MLflow | SQLite backend `mlflow.db` 생성 |
 | API | FastAPI `/health`, `/model-info`, `/predict` 구현 |
 | UI | Streamlit sample prediction 구현 |
-| Docker | Dockerfile, `requirements-api.txt` 작성 |
+| Docker | image build, healthy container, 정상/불량 API 검증 완료 |
 | DVC | `dvc.yaml`, `.dvcignore`, data versioning doc 작성 |
 
 ### 해야 할 일
@@ -476,7 +481,7 @@ Zhang Xin 담당자는 **최적화 전 baseline 모델 비교와 XAI 초안**을
 | 4 | serving candidate 또는 champion tag 정리 | MLflow tag 증거 |
 | 5 | 최종 model artifact를 FastAPI와 연결 | `/predict` 동작 |
 | 6 | API Swagger 화면 확인 | `/docs` 화면 캡처 |
-| 7 | Docker Desktop 환경에서 build/run 검증 | `/health` 동작 캡처 |
+| 7 | Docker Desktop 환경에서 build/run 검증 | 완료: container `healthy`, API 증거 저장 |
 | 8 | README 실행 명령 최종 점검 | 새 환경에서 실행 가능 |
 | 9 | API/UI demo script 작성 | 5분 발표 리허설 가능 |
 
@@ -570,11 +575,13 @@ http://127.0.0.1:8501
 
 ### Docker 실행
 
-Docker Desktop이 설치된 환경에서:
+Docker Desktop 환경에서:
 
-```bash
-docker build -t diecasting-api .
-docker run -p 8000:8000 diecasting-api
+```powershell
+docker build -t diecasting-api:logistic-champion-v1 .
+docker run --rm -d -p 8000:8000 `
+  --name diecasting-api `
+  diecasting-api:logistic-champion-v1
 ```
 
 ## 9. 최종 발표 Demo Path
@@ -611,7 +618,7 @@ docker run -p 8000:8000 diecasting-api
 | False positive | 정상을 불량으로 예측하는 경우 | precision 확인 | 운영 비용 관점 논의 |
 | Drift | 공정 조건 분포가 변하면 성능 저하 | Future Work로 PSI/KS 제안 | drift simulation 가능 시 추가 |
 | Demo failure | 발표 중 서버/API 오류 | 고정 샘플 준비 | 발표 전 로컬 리허설 |
-| Docker 검증 | 현재 PC에 Docker CLI 없음 | Dockerfile 작성 | Docker Desktop 환경에서 검증 필요 |
+| Docker 검증 | 환경 차이로 API 실행 실패 가능 | Python/package 고정, health check, 실제 build/run 검증 | cloud registry/deployment는 Future Work |
 
 ## 11. 최종 산출물 체크리스트
 
@@ -626,7 +633,7 @@ docker run -p 8000:8000 diecasting-api
 | MLflow evidence | 심재광 | champion run과 screenshot 완료 | 발표자료 삽입 |
 | FastAPI demo | 심재광 | 구현/검증 완료 | 발표 리허설 |
 | Web UI demo | 심재광 | 구현/검증 완료 | 발표 리허설 |
-| Docker evidence | 심재광 | Dockerfile 있음 | Docker 환경에서 build/run 확인 |
+| Docker evidence | 심재광 | build/run/API 검증과 screenshot 완료 | 발표자료 삽입 |
 | 데모 영상 | 선택 | 미정 | 시간이 있으면 1080p 녹화 |
 
 ## 12. 다음 액션
@@ -653,7 +660,7 @@ docker run -p 8000:8000 diecasting-api
 3. tuning 전/후 결과를 MLflow에 기록
 4. README 최종 실행 검증
 5. MLflow/FastAPI/Streamlit screenshot 확보
-6. Docker build 가능한 환경에서 검증
+6. Docker evidence를 발표자료에 배치
 7. 보고서와 발표자료 초안 작성
 
 ## 13. 이 프로젝트의 최종 메시지
