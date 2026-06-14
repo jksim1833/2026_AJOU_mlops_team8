@@ -56,6 +56,10 @@ GitHub default branch는 아직 `main`이지만 최신 통합 결과는 `sim`에
    구성하고 clean clone에서 `dvc pull` 복원을 검증했다.
 9. week15의 실행 재현성 요구에 맞춰 champion FastAPI를 Docker image로
    만들고 실제 build/run/API 호출을 검증했다.
+10. 최종 보고서(Word/PDF)와 발표자료(PPTX/PDF, 11장) 및 발표 대본을
+    제작했다. 모든 수치는 `artifacts/reports/*.json`과
+    `docs/evidence/docker_verification.md` 원본 기준으로 통일했다. 상세는
+    아래 "제출물" 섹션 참고.
 
 ## 현재 핵심 결과
 
@@ -202,13 +206,75 @@ curl.exe -X POST http://localhost:8000/predict `
 상태로 실행 중이다. 새 thread 시작 시 이미 실행 중이면 같은 이름으로
 다시 `docker run`하지 말고 `docker ps`로 먼저 확인한다.
 
+## 제출물 (보고서·발표자료)
+
+### 산출물 파일
+
+- 최종 보고서: `docs/diecasting_mlops_final_report.docx` / `.pdf` (한국어,
+  약 23페이지). 7개 장 + 표지/목차/요약. §3 MLOps 구조는 Git/DVC/MLflow/
+  Docker의 동작 원리·설계 의도·재현성 보장까지 상세화하고 §3.5
+  "End-to-End 재현성 보장"을 신설했다.
+- 발표자료: `docs/diecasting_mlops_presentation.pptx` (11장) / `.pdf`.
+  보고서와 동일한 네이비 톤. PPTX에는 발표 노트를 넣지 않았다.
+- 발표 대본: `docs/diecasting_mlops_presentation_script.md` (슬라이드별
+  구어체 대본, 목표 팀당 약 8분, 예상 질문 대응 포함).
+- 생성 스크립트: `scripts/build_report.js` (보고서),
+  `scripts/build_slides.js` (발표자료). 수정 후 재실행만 하면 문서가
+  다시 생성된다.
+
+### 발표자료 슬라이드 구성 (11장)
+
+1. 표지
+2. 문제 정의와 목표
+3. 데이터 이해와 전처리
+4. 데이터 파이프라인 — DVC 4단계 실행 (★핵심, 3열 표로 단계·명령·산출물)
+5. MLOps 4계층 & 재현성 (★핵심, Git/DVC/MLflow/Docker 2×2 카드)
+6. 모델 실험 — 어떻게 비교했나 (★핵심, 실험 절차 5단계 + Val F1 차트)
+7. 튜닝 & 실험 추적 (MLflow)
+8. XAI — 모델 해석 (SHAP)
+9. Serving — FastAPI & Streamlit
+10. Docker 배포 & 재현성
+11. 결론 & Future Work
+
+slide 4·5·6이 이번 수업의 핵심이라 분량·시간을 가장 크게 배정했다.
+원래 한 장이던 파이프라인 슬라이드를 4(DVC 4단계 실행)와 5(4계층·재현성)
+두 장으로 분리해 과정을 상세히 설명한다.
+
+### 문서 생성·변환 방법
+
+- Node 전역 패키지 `docx`, `pptxgenjs`를 사용한다. 실행 시
+  `$env:NODE_PATH = (npm root -g)`를 설정한 뒤 `node scripts/build_report.js`,
+  `node scripts/build_slides.js`를 돌린다.
+- 이 PC에는 LibreOffice가 없고 docx/pptx skill의 `soffice.py`는 Windows를
+  지원하지 않는다(AF_UNIX 오류). 그래서 PDF 변환은 **Microsoft Word/
+  PowerPoint COM 자동화**로 수행했다. Word는 PDF 저장 시 TOC(목차)도
+  갱신한다. 변환 전 잔류 `WINWORD`/`POWERPNT` 프로세스를 종료해야 파일
+  잠금(EBUSY)을 피한다.
+- 보고서 docx 검증은 skill의 `validate.py`를 `PYTHONUTF8=1`로 실행해야
+  한다(한국어 Windows 로케일 cp949에서 UTF-8 XML 디코딩 오류 방지).
+
+### 알게 된 점 / 주의
+
+- `docs/evidence`의 `mlflow_champion.png`, `fastapi_swagger.png`,
+  `streamlit_champion_metrics.png`, `docker_fastapi_swagger.png`는 **확장자만
+  `.png`이고 실제 내용은 JPEG**다. 두 빌드 스크립트는 파일 시그니처로
+  포맷을 자동 감지해 임베드한다. `type`을 `png`로 강제하면 Word가 파일을
+  열지 못하므로 변경하지 말 것.
+- 표지/문서의 과목명·교수명·팀 번호·학번은 repo명에서 **추정한 값**이다
+  (아주대학교 · MLOps · 8조). 최종 제출 전 실제 정보로 확정해야 한다.
+- 보고서 본문 수치는 `metrics.json`/`baseline_comparison.json`/
+  `data_profile.json`/`metadata.json`/`docker_verification.md` 기준으로
+  통일했다. 결함 컬럼 제거 수는 26개, Docker image size는 약 154MB가
+  최신 원본 기준이다.
+
 ## 남은 작업
 
-1. 최종 보고서 PDF를 작성한다.
-2. 발표자료 PDF를 제작한다.
-3. EDA, leaderboard, tuning 전후 성능, MLflow champion, Swagger,
-   Streamlit, Docker evidence를 발표자료에 배치한다.
-4. API/UI/Docker 고정 sample demo script를 작성하고 리허설한다.
+1. (완료) 최종 보고서 Word/PDF 작성 — §3 MLOps 구조 상세화 포함.
+2. (완료) 발표자료 PPTX/PDF(11장)와 발표 대본 작성, EDA·leaderboard·
+   tuning·MLflow·Swagger·Streamlit·Docker evidence 배치.
+3. 표지·문서의 과목명/교수명/팀·학번 등 메타데이터를 확정하고 보고서·
+   발표자료 양쪽에 반영한다.
+4. API/UI/Docker 고정 sample demo를 리허설한다(발표 대본의 시연 팁 참고).
 5. 최신 `sim`을 GitHub `main`에 반영하고 public repository의 default
    branch와 제출 링크를 최종 확인한다.
 6. 선택 사항으로 데모 영상을 녹화한다.
@@ -237,15 +303,19 @@ curl.exe -X POST http://localhost:8000/predict `
 
 ## 다음 thread 권장 첫 작업
 
-코드 구현, local DVC remote, Docker serving 검증은 완료됐다. 다음
-thread에서는 구현을 추가하기보다 제출물 완성에 집중한다.
+코드 구현, local DVC remote, Docker serving 검증, 최종 보고서·발표자료·
+발표 대본 초안까지 완료됐다. 다음 thread에서는 새 구현보다 **제출물
+확정과 리허설, main 반영**에 집중한다.
 
 권장 순서:
 
-1. `project_brief.md`, 이 문서, `docs/final_report_outline.md`,
-   `docs/presentation_outline.md`를 읽는다.
+1. 이 문서의 "제출물" 섹션과 `project_brief.md`를 읽는다.
 2. 현재 test/DVC/Docker 상태를 위 시작 명령으로 확인한다.
-3. 최종 보고서 PDF를 작성한다.
-4. 발표자료 PDF에 기존 evidence를 배치한다.
-5. API/UI/Docker demo를 리허설한다.
-6. `sim`을 `main`에 반영하고 GitHub 제출 상태를 점검한다.
+3. 표지·문서의 과목명/교수명/팀·학번 메타데이터를 확정하고, 필요한 값을
+   `scripts/build_report.js`와 `scripts/build_slides.js`에서 고친 뒤 두
+   스크립트를 다시 실행해 docx/pptx와 PDF를 재생성한다.
+4. 발표 대본(`docs/diecasting_mlops_presentation_script.md`)으로 API/UI/
+   Docker demo를 리허설한다.
+5. `sim`을 `main`에 반영하고 GitHub 제출 상태(default branch·링크)를
+   점검한다.
+6. 선택 사항으로 데모 영상을 녹화한다.

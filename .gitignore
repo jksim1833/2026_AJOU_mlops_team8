@@ -18,3 +18,6 @@ mlartifacts/
 
 *.log
 .local_run/
+
+# Microsoft Office owner/lock temp files
+~$*
