@@ -21,3 +21,6 @@ mlartifacts/
 
 # Microsoft Office owner/lock temp files
 ~$*
+
+# Demo recording (submitted separately, not tracked in repo)
+docs/*.mp4
