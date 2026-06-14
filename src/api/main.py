@@ -7,6 +7,7 @@ from typing import Any
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 
@@ -14,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[2]
 MODEL_PATH = ROOT / "artifacts" / "models" / "model.joblib"
 METADATA_PATH = ROOT / "artifacts" / "models" / "metadata.json"
 FEATURE_IMPORTANCE_PATH = ROOT / "artifacts" / "reports" / "feature_importance.json"
+DEMO_SAMPLES_PATH = ROOT / "artifacts" / "reports" / "demo_samples.json"
+INDEX_HTML_PATH = Path(__file__).resolve().parent / "static" / "index.html"
 
 
 class PredictionRequest(BaseModel):
@@ -49,6 +52,20 @@ app = FastAPI(
     version="1.0.0",
     description="KAMP 다이캐스팅 공정/센서 데이터 기반 정상/불량 이진 분류 API",
 )
+
+
+@app.get("/", response_class=HTMLResponse)
+def index() -> HTMLResponse:
+    if not INDEX_HTML_PATH.exists():
+        raise HTTPException(status_code=404, detail="UI page not found.")
+    return HTMLResponse(INDEX_HTML_PATH.read_text(encoding="utf-8"))
+
+
+@app.get("/samples")
+def samples() -> dict[str, Any]:
+    if not DEMO_SAMPLES_PATH.exists():
+        raise HTTPException(status_code=503, detail="demo_samples.json not found.")
+    return load_json(DEMO_SAMPLES_PATH)
 
 
 @app.get("/health")
