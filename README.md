@@ -103,6 +103,16 @@ python -m src.data.prepare_data
 - `data/processed/valid.csv`
 - `data/processed/test.csv`
 - `artifacts/reports/data_profile.json`
+- `artifacts/plots/eda_class_distribution.png`
+- `artifacts/plots/eda_feature_distributions.png`
+- `artifacts/plots/eda_feature_boxplots.png`
+- `artifacts/plots/eda_correlation_heatmap.png`
+
+`data_profile.json`의 `eda` 항목에는 class 비율, 결측치, 상수 컬럼,
+핵심 feature 8개, 기술통계, 클래스별 비교, 상관관계와 IQR 이상치 후보가
+기록됩니다. 이상치는 공정상 유효한 극단값일 수 있어 제거하지 않고
+보고만 합니다. Streamlit의 `Data EDA` 탭에서도 같은 결과를 확인할 수
+있습니다.
 
 ## 2. Train Baseline with MLflow
 
@@ -239,7 +249,7 @@ curl http://localhost:8000/health
 
 `dvc.yaml`에는 다음 네 stage가 정의되어 있습니다.
 
-- `prepare_data`: label 생성, exact dedup, split
+- `prepare_data`: label 생성, exact dedup, split, EDA profile/plot 생성
 - `train_binary`: RF baseline
 - `compare_baselines_xai`: AutoML-lite leaderboard와 SHAP
 - `tune_logistic`: Logistic tuning, MLflow champion, serving artifact

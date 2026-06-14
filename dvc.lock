@@ -13,13 +13,29 @@ stages:
       size: 718893
     - path: src/data/prepare_data.py
       hash: md5
-      md5: 0791fe40456c782763274e37c3d85b4e
-      size: 5663
+      md5: fd3337600e13e7f5b257b206409c5b63
+      size: 16958
     outs:
+    - path: artifacts/plots/eda_class_distribution.png
+      hash: md5
+      md5: 98746f84356037d2534e80adc5ea63e3
+      size: 27791
+    - path: artifacts/plots/eda_correlation_heatmap.png
+      hash: md5
+      md5: 27b067ec9c6e1057237e70b5363727d6
+      size: 157428
+    - path: artifacts/plots/eda_feature_boxplots.png
+      hash: md5
+      md5: c01bf3bdcc870250108fda8ae9ba98e2
+      size: 138695
+    - path: artifacts/plots/eda_feature_distributions.png
+      hash: md5
+      md5: a7078d6ce1b3ccb411983c9b1cf9de2c
+      size: 158282
     - path: artifacts/reports/data_profile.json
       hash: md5
-      md5: 8359d61d8782075602e58f0675bb232f
-      size: 1371
+      md5: aa397886ea130cfeaaf4aef2394bc7af
+      size: 17724
     - path: data/processed/diecasting_product1_binary.csv
       hash: md5
       md5: 835b06d38ac63ec373775959d0c52dcd

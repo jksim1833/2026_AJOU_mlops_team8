@@ -11,6 +11,10 @@ stages:
       - data/processed/valid.csv
       - data/processed/test.csv
       - artifacts/reports/data_profile.json
+      - artifacts/plots/eda_class_distribution.png
+      - artifacts/plots/eda_feature_distributions.png
+      - artifacts/plots/eda_feature_boxplots.png
+      - artifacts/plots/eda_correlation_heatmap.png
 
   train_binary:
     cmd: python -m src.models.train_binary

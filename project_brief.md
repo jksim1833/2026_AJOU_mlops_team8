@@ -350,15 +350,17 @@ docker run -p 8000:8000 diecasting-api
 | data profile | `artifacts/reports/data_profile.json` |
 | label rule | 결함 컬럼 중 하나라도 1이면 불량 |
 | split | stratified 70/15/15 |
+| EDA | class 분포, 핵심 feature 8개 분포/boxplot, correlation heatmap 생성 완료 |
+| data quality | 결측 0건, 상수 컬럼과 IQR 이상치 후보를 `data_profile.json`에 기록 |
 
 ### 해야 할 일
 
 | 우선순위 | 작업 | 완료 기준 |
 | :--- | :--- | :--- |
 | 1 | 데이터 출처와 Product 1 선택 이유 정리 | 보고서 Data 섹션 초안 |
-| 2 | 정상/불량 class 분포 plot 생성 | 발표용 class distribution 이미지 |
-| 3 | 주요 feature 5~10개 분포 확인 | EDA notebook 또는 plot |
-| 4 | 결측치/이상치 처리 여부 정리 | 데이터 품질 표 |
+| 2 | 정상/불량 class 분포 plot 생성 | 완료: `artifacts/plots/eda_class_distribution.png` |
+| 3 | 주요 feature 5~10개 분포 확인 | 완료: 통계 기준 상위 8개 분포/boxplot |
+| 4 | 결측치/이상치 처리 여부 정리 | 완료: 결측 0건, IQR 이상치는 보고만 수행 |
 | 5 | leakage 방지 설명 작성 | “결함 컬럼 제거” 문장과 표 |
 | 6 | DVC 데이터 버전 전략 보완 | `docs/data_versioning.md` 업데이트 |
 
@@ -618,7 +620,7 @@ docker run -p 8000:8000 diecasting-api
 | 최종 보고서 PDF | 심재광, 전체 검토 | outline 있음 | Word/PDF 작성 |
 | 발표자료 PDF | 심재광 | outline 있음 | slide 제작 |
 | GitHub Repository | 심재광 | local repo 구조 있음 | public repo 생성/push |
-| 데이터/EDA 자료 | 김병근 | data profile 있음 | EDA plot 보강 |
+| 데이터/EDA 자료 | 김병근 | data profile 및 EDA plot 완료 | 발표 자료에 이미지 배치 |
 | Baseline 모델 비교 | Zhang Xin | 5개 후보 leaderboard/XAI 완료 | 보고서 반영 |
 | Tuning/모델 최적화 | 심재광 | Logistic CV/threshold tuning 완료 | 발표 근거 반영 |
 | MLflow evidence | 심재광 | champion run과 screenshot 완료 | 발표자료 삽입 |
@@ -632,7 +634,7 @@ docker run -p 8000:8000 diecasting-api
 ### 김병근
 
 1. `data_profile.json` 기반으로 데이터 설명 표 작성
-2. class distribution plot 생성
+2. 생성된 class distribution plot을 발표 자료에 배치
 3. 결함 컬럼 제거와 leakage 방지 설명 작성
 4. DVC/data versioning 설명 검토
 

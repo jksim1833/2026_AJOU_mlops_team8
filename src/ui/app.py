@@ -146,6 +146,75 @@ def feature_tab() -> None:
     st.dataframe(df.head(top_n), use_container_width=True)
 
 
+def data_eda_tab() -> None:
+    data_profile = load_json(DATA_PROFILE_PATH)
+    if not data_profile or not data_profile.get("eda"):
+        st.info("Run `python -m src.data.prepare_data` to generate EDA artifacts.")
+        return
+
+    eda = data_profile["eda"]
+    class_distribution = eda.get("class_distribution", {})
+    missing = eda.get("missing_values", {})
+    constants = eda.get("constant_features", {})
+
+    st.subheader("Data Quality Overview")
+    cols = st.columns(5)
+    cols[0].metric("Rows", data_profile.get("rows", "-"))
+    cols[1].metric(
+        "Normal",
+        class_distribution.get("0", {}).get("count", "-"),
+    )
+    cols[2].metric(
+        "Defect",
+        class_distribution.get("1", {}).get("count", "-"),
+    )
+    cols[3].metric("Missing", missing.get("processed_missing_total", "-"))
+    cols[4].metric("Constant features", constants.get("count", "-"))
+
+    selected = eda.get("feature_selection", {}).get("selected_features", [])
+    if selected:
+        st.caption(
+            "Selected by absolute class mean difference divided by population "
+            f"standard deviation: {', '.join(selected)}"
+        )
+
+    plot_cols = st.columns(2)
+    with plot_cols[0]:
+        show_plot(
+            PLOT_DIR / "eda_class_distribution.png",
+            "Normal and defect class distribution",
+        )
+    with plot_cols[1]:
+        show_plot(
+            PLOT_DIR / "eda_correlation_heatmap.png",
+            "Selected feature correlation heatmap",
+        )
+    show_plot(
+        PLOT_DIR / "eda_feature_distributions.png",
+        "Selected feature distributions by class",
+    )
+    show_plot(
+        PLOT_DIR / "eda_feature_boxplots.png",
+        "Selected feature boxplots by class",
+    )
+
+    outliers = eda.get("outliers", {}).get("features", [])
+    if outliers:
+        st.subheader("IQR Outlier Candidates")
+        outlier_frame = pd.DataFrame(outliers)
+        st.caption("Report only: no rows are removed or winsorized.")
+        st.dataframe(
+            outlier_frame[
+                ["feature", "count", "ratio", "lower_bound", "upper_bound"]
+            ],
+            use_container_width=True,
+        )
+
+    if constants.get("features"):
+        st.subheader("Constant Features")
+        st.write(", ".join(constants["features"]))
+
+
 def xai_tab() -> None:
     baseline_table = load_text(BASELINE_TABLE_PATH)
     candidate_note = load_text(CANDIDATE_NOTE_PATH)
@@ -196,6 +265,11 @@ def artifacts_tab() -> None:
         XAI_INTERPRETATION_PATH,
         LOCAL_EXPLANATION_PATH,
         TUNING_REPORT_PATH,
+        DATA_PROFILE_PATH,
+        PLOT_DIR / "eda_class_distribution.png",
+        PLOT_DIR / "eda_feature_distributions.png",
+        PLOT_DIR / "eda_feature_boxplots.png",
+        PLOT_DIR / "eda_correlation_heatmap.png",
         PLOT_DIR / "confusion_matrix.png",
         PLOT_DIR / "roc_curve.png",
         PLOT_DIR / "feature_importance.png",
@@ -213,14 +287,25 @@ def artifacts_tab() -> None:
         )
     st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
-tabs = st.tabs(["Predict", "Metrics", "Feature Importance", "Baseline/XAI", "Artifacts"])
+tabs = st.tabs(
+    [
+        "Predict",
+        "Metrics",
+        "Data EDA",
+        "Feature Importance",
+        "Baseline/XAI",
+        "Artifacts",
+    ]
+)
 with tabs[0]:
     prediction_tab()
 with tabs[1]:
     metrics_tab()
 with tabs[2]:
-    feature_tab()
+    data_eda_tab()
 with tabs[3]:
-    xai_tab()
+    feature_tab()
 with tabs[4]:
+    xai_tab()
+with tabs[5]:
     artifacts_tab()
